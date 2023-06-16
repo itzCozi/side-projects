@@ -65,25 +65,24 @@ def convertTime():
   timestr = str(inTime)
   index = timestr.find('.')
   number = timestr[:index]
-  decimal = timestr[index:].replace('.', '')
 
-  hours = int(round(int(number) / 60, 0) / 60)
-  minutes = int(round(int(decimal) / 100 * 60, 0))
-  formatted = f'{hours}:{minutes}'
-  return str(formatted)
+  hours = float(round(int(number) / 60 / 60, 2))
+  return str(hours)
 
 
 def postGame():
   vars.end_time = time.time()
   elapsed = vars.end_time - vars.init_time
+  session_time = float(round(int(elapsed) / 60, 1))
   with open(vars.log_file, 'r') as r:
     logged_time = float(r.readline().replace('game-time: ', ''))
     r.close()
   with open(vars.log_file, 'w') as f:
     f.write(f'game-time: {round(logged_time+elapsed, 2)}')
     f.close()
-  print(f'\nHours/Minutes Played: {convertTime()}')
-  time.sleep(3)
+  print(f'\nMinutes Played: {session_time}')
+  print(f'\nOverall Hours: {convertTime()}')
+  time.sleep(5)
 
 
 if __name__ == '__main__':
