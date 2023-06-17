@@ -56,7 +56,7 @@ def getHours():
 
 def startGame():
   os.startfile(vars.game)
-  print(f'Started Game - {vars.now()}')
+  print(f"Started {vars.game.split('/')[-1]} - {vars.now()}")
   vars.init_time = time.time()
 
 
@@ -81,7 +81,7 @@ def postGame():
     f.write(f'game-time: {round(logged_time+elapsed, 2)}')
     f.close()
   print(f'\nMinutes Played: {session_time}')
-  print(f'\nOverall Hours: {convertTime()}')
+  print(f'Overall Hours: {convertTime()}\n')
   time.sleep(5)
 
 
