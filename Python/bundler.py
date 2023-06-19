@@ -34,25 +34,30 @@ def createBundle(main_folder, amount):
       print(f'ERROR: Cannot find {main_folder} because it does not exist.')
       sys.exit(1)
 
-    print(f'\nBUNDLE NUMBER - #{wave}  {int(round(wave/amount*100, 0))}%\n')
+    print(f'\nBUNDLE NUMBER - #{wave+1}\n')
 
     size = random.randint(15, 25)
+    buffer = size * 3
     out_dir = f"{main_dir}/BUNDLE#{genID()}"
     folder_content = []
     iterated = []
     subfolders = []
+    bin = []
     os.mkdir(out_dir)
     for dirpath, dirnames, filenames in os.walk(main_folder):
       subfolders.append(dirpath)
 
-    for cycle in range(size):
+    for enum in range(buffer):
       for r, d, f in os.walk(random.choice(subfolders)):
         if len(f) != 0:
           path = f'{r}/{random.choice(f)}'.replace('\\', '/')
+          bin.append(path)
 
-          if path not in iterated:
-            folder_content.append(path)
-          iterated.append(path)
+    for cycle in range(size):
+      selected = random.choice(bin)
+      if selected not in iterated:
+        folder_content.append(selected)
+      iterated.append(selected)
 
     for file in folder_content:
       if not os.path.exists(file):
@@ -60,11 +65,12 @@ def createBundle(main_folder, amount):
         sys.exit(1)
       extension = os.path.splitext(file)[1]
 
-      print(f"{file.split('/')[-1]} - {now()}")
-      with open(file, 'rb') as f:
-        content = f.read()
-      with open(f"{out_dir}/{genID()}{extension}", 'wb') as out_file:
-        out_file.write(content)
+      if extension != '.txt':
+        print(f"{file.split('/')[-1]} - {now()}")
+        with open(file, 'rb') as f:
+          content = f.read()
+        with open(f"{out_dir}/{genID()}{extension}", 'wb') as out_file:
+          out_file.write(content)
 
   print(f'\nALL BUNDLES HAVE BEEN CREATED AT: {main_dir}')
 
