@@ -60,13 +60,11 @@ def createBundle(main_folder, amount):
         sys.exit(1)
       extension = os.path.splitext(file)[1]
 
-      if '.txt' not in extension:
-        print(f"{file.split('/')[-1]} - {now()}")
-
-        with open(file, 'rb') as f:
-          content = f.read()
-        with open(f"{out_dir}/{genID()}{extension}", 'wb') as out_file:
-          out_file.write(content)
+      print(f"{file.split('/')[-1]} - {now()}")
+      with open(file, 'rb') as f:
+        content = f.read()
+      with open(f"{out_dir}/{genID()}{extension}", 'wb') as out_file:
+        out_file.write(content)
 
   print(f'\nALL BUNDLES HAVE BEEN CREATED AT: {main_dir}')
 
