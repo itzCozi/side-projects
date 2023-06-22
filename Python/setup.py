@@ -8,18 +8,15 @@ try:
   import os, sys
   import requests
   import shutil
-  import win32com.client  # Requires pywin32
+  import win32com.client
 except:
-  print('Error: Missing required modules. Please install the following modules: requests, socket and pywin32')
+  print('Error: Missing required modules. Please install the following modules: requests and socket')
 
 
 class vars:
-  log = True  # Default: false | Can be changed with arguments
+  log = True
   zip_link = f'https://itzcozi.github.io/SafeGuard/data/safeguard.zip'
   mainFolder = str(f'C:/Users/{os.getlogin()}/Python-SafeGuard')
-  compiledFolder = str(f'C:/Users/{os.getlogin()}/Python-SafeGuard/compiled')
-  resourceFolder = str(f'C:/Users/{os.getlogin()}/Python-SafeGuard/resources')
-
 
 def install(URL, newpath):
   file_content = requests.get(URL)
@@ -33,14 +30,6 @@ def createStructure():
     os.mkdir(vars.mainFolder)
     if vars.log:
       print(f'Created {vars.mainFolder}')
-  if not os.path.exists(vars.compiledFolder):
-    os.mkdir(vars.compiledFolder)
-    if vars.log:
-      print(f'Created {vars.compiledFolder}')
-  if not os.path.exists(vars.resourceFolder):
-    os.mkdir(vars.resourceFolder)
-    if vars.log:
-      print(f'Created {vars.resourceFolder}')
   else:
     if vars.log:
       print('All folders accounted for')
@@ -59,13 +48,13 @@ def createShortcut(targetFile):
 
 if __name__ == '__main__':
   createStructure()
-  install(vars.zip_link, f'{vars.compiledFolder}/archive.zip')
-  shutil.unpack_archive(f'{vars.compiledFolder}/archive.zip', vars.compiledFolder)
-  os.remove(f'{vars.compiledFolder}/archive.zip')
-  createShortcut(f'{vars.compiledFolder}/safeguard.exe')
+  install(vars.zip_link, f'{vars.mainFolder}/archive.zip')
+  shutil.unpack_archive(f'{vars.mainFolder}/archive.zip', vars.mainFolder)
+  os.remove(f'{vars.mainFolder}/archive.zip')
+  createShortcut(f'{vars.mainFolder}/compiled/safeguard.exe')
 
   print(f'\nSafeGuard installed at: \
-  \n{vars.compiledFolder} \
+  \n{vars.mainFolder} \
   \nA desktop shortcut has been created though if broken \
   \nor not on your desktop you may need to make your own. \
   \nGithub Link: https://github.com/itzCozi/SafeGuard \
