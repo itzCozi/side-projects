@@ -55,20 +55,20 @@ if __name__ == '__main__':
 
     elif text.lower() == '::quit':
       lib.quitProcess()
-      
-    elif text.lower() == '::open':
-      # TODO: Add a open file function to open files and write to them
-      # if the file doesnt exist create it as long as the directory exists. 
-      lib.quitProcess()
 
     elif text.lower() == '::clear':
       lib.clearPad()
 
     elif text.lower() == '::time':
       print(vars.now())
-      
+
     elif text.lower().split(' ')[0] == '::system':
       os.system(f"{' '.join(text.lower().split(' ')[1:])}")
+
+    elif text.lower().split(' ')[0] == '::open':
+      # TODO: Add a open file function to open files and write to them
+      # if the file doesnt exist create it as long as the directory exists.
+      pass
 
     elif text.lower().split(' ')[0] == '::theme':
       try:
