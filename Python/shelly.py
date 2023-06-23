@@ -1,5 +1,3 @@
-# A notepad type program can edit files save entrys and load from files
-
 import os, sys
 import time
 
@@ -66,9 +64,59 @@ if __name__ == '__main__':
       os.system(f"{' '.join(text.lower().split(' ')[1:])}")
 
     elif text.lower().split(' ')[0] == '::open':
-      # TODO: Add a open file function to open files and write to them
-      # if the file doesnt exist create it as long as the directory exists.
-      pass
+      try:
+        path = text.lower().split(' ')[1]
+        directory = '/'.join(text.lower().split(' ')[1].split('/')[:-1])
+        file = '/'.join(text.lower().split(' ')[1].split('/')[-1:])
+
+        def openLoop():
+          while True:
+            vars.ticker += 1
+            text = input(f'{vars.ticker}. ')
+            if text.lower() == '::close':
+              print(f'Closed: {file}')
+              break
+            else:
+              if os.path.getsize(path) == 0:
+                writeback = f'{text}'
+              if os.path.getsize(path) != 0:
+                writeback = f'\n{text}'
+              with open(path, 'a') as out:
+                out.write(writeback)
+
+        if directory == '':
+          if os.path.exists(f'{os.getcwd()}/{file}'):
+            with open(path, 'r') as r:
+              content = r.read()
+              for line in content.splitlines():
+                vars.ticker += 1
+                print(f'{vars.ticker}. {line}')
+            openLoop()
+
+          if not os.path.exists(file):
+            with open(path, 'w+') as w:
+              print(f'Created: {file}')
+            openLoop()
+        elif os.path.exists(directory):
+          if os.path.exists(file):
+            with open(path, 'r') as r:
+              content = r.read()
+              for line in content.splitlines():
+                vars.ticker += 1
+                print(f'{vars.ticker}. {line}')
+            openLoop()
+
+          if not os.path.exists(file):
+            with open(path, 'w+') as w:
+              print(f'Created: {file}')
+            openLoop()
+        else:
+          print(f'The folder {directory} does not exist.')
+          time.sleep(3)
+
+      except Exception as e:
+        print(f'ERROR: {e}')
+        time.sleep(3)
 
     elif text.lower().split(' ')[0] == '::theme':
       try:
@@ -107,7 +155,7 @@ if __name__ == '__main__':
           print('Given color not recognized, Example(::theme blue white).')
       except Exception as e:
         print(f'ERROR: {e}')
-        time.sleep(2)
+        time.sleep(3)
 
     else:
       vars.output_log.append(text)
