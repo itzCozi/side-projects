@@ -44,14 +44,14 @@ class lib:
         save_file = f'{os.getcwd()}/save.txt'
         time.sleep(3)
     else:
-      save_file = f'{os.getcwd()}/save.txt'
+      save_file = f'{os.getcwd()}/save.txt'.replace('\\', '/')
     for item in vars.output_log:
       if '::' in item:
         vars.output_log.remove(item)
     with open(save_file, 'w') as save:
       save.write('\n'.join(vars.output_log))
       save.close()
-    print(f'Saved text to {file}')
+    print(f'Saved text to {save_file}')
 
   def loadSave():
     if len(text.split(' ')) > 1:
@@ -67,7 +67,7 @@ class lib:
         save_file = f'{os.getcwd()}/save.txt'
         time.sleep(3)
     else:
-      save_file = f'{os.getcwd()}/save.txt'
+      save_file = f'{os.getcwd()}/save.txt'.replace('\\', '/')
     with open(save_file, 'r') as save:
       content = save.read()
       for line in content.splitlines():
@@ -75,7 +75,7 @@ class lib:
         vars.output_log.append(line)
         print(f'{vars.ticker}. {line}')
       save.close()
-    print(f'Loaded text from {file}')
+    print(f'Loaded text from {save_file}')
 
   def openFile():
     try:
