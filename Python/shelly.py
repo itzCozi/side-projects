@@ -1,5 +1,9 @@
-import os, sys
-import time
+try:
+  import os, sys
+  import time
+except Exception as e:
+  print(f'ERROR: {e}')
+  sys.exit(1)
 
 
 class vars:
@@ -14,12 +18,23 @@ class lib:
     os.system('cls')
     vars.ticker = 0
 
+  def stall():
+    if len(text.lower().split(' ')) > 1:
+      if text.lower().split(' ')[1].isdigit():
+        given_num = int(text.split(' ')[1])
+        for i in range(given_num):
+          time.sleep(1)
+          print('.', end='', flush=True)
+        print()
+    else:
+      print('No time given, Example(::stall 9) this will wait 9 seconds.')
+
   def quitProcess():
     os.system('Color C7')
     check = input('Are you sure you want to quit? (y/n): ')
     if check == 'yes' or check == 'y':
       print('Quitting...')
-      time.sleep(2)
+      time.sleep(1)
       os.system('Color 07')
       sys.exit(0)
     elif check == 'no' or check == 'n':
@@ -31,10 +46,14 @@ class lib:
       lib.quitProcess()
 
   def saveText():
+    if '\\' in text.lower():
+      print('Please use forward-slashes (/) to separate directories.')
+      return 0
     if len(text.split(' ')) > 1:
       path = text.lower().split(' ')[1]
       directory = '/'.join(text.lower().split(' ')[1].split('/')[:-1])
       file = ''.join(text.lower().split(' ')[1].split('/')[-1])
+
       if directory == '':
         save_file = f'{os.getcwd()}/{file}'
       elif os.path.exists(directory):
@@ -44,7 +63,8 @@ class lib:
         save_file = f'{os.getcwd()}/save.txt'
         time.sleep(3)
     else:
-      save_file = f'{os.getcwd()}/save.txt'.replace('\\', '/')
+      save_file = f'{os.getcwd()}/save.txt'
+    save_file = save_file.replace('\\', '/')
     for item in vars.output_log:
       if '::' in item:
         vars.output_log.remove(item)
@@ -54,10 +74,14 @@ class lib:
     print(f'Saved text to {save_file}')
 
   def loadSave():
+    if '\\' in text.lower():
+      print('Please use forward-slashes (/) to separate directories.')
+      return 0
     if len(text.split(' ')) > 1:
       path = text.lower().split(' ')[1]
       directory = '/'.join(text.lower().split(' ')[1].split('/')[:-1])
       file = ''.join(text.lower().split(' ')[1].split('/')[-1])
+
       if directory == '':
         save_file = f'{os.getcwd()}/{file}'
       elif os.path.exists(directory):
@@ -67,7 +91,8 @@ class lib:
         save_file = f'{os.getcwd()}/save.txt'
         time.sleep(3)
     else:
-      save_file = f'{os.getcwd()}/save.txt'.replace('\\', '/')
+      save_file = f'{os.getcwd()}/save.txt'
+    save_file = save_file.replace('\\', '/')
     with open(save_file, 'r') as save:
       content = save.read()
       for line in content.splitlines():
@@ -79,9 +104,16 @@ class lib:
 
   def openFile():
     try:
-      path = text.lower().split(' ')[1]
-      directory = '/'.join(text.lower().split(' ')[1].split('/')[:-1])
-      file = ''.join(text.lower().split(' ')[1].split('/')[-1])
+      if '\\' in text.lower():
+        print('Please use forward-slashes (/) to separate directories.')
+        return 0
+      if len(text.split(' ')) > 1:
+        path = text.lower().split(' ')[1]
+        directory = '/'.join(text.lower().split(' ')[1].split('/')[:-1])
+        file = ''.join(text.lower().split(' ')[1].split('/')[-1])
+      else:
+        print('Please provide a file, Example(::open C:/test.txt | ::open save.txt).')
+        return 0
 
       def openLoop():
         while True:
@@ -135,6 +167,7 @@ class lib:
     except Exception as e:
       print(f'ERROR: {e}')
       time.sleep(3)
+      return 0
 
   def changeTheme():
     try:
@@ -178,6 +211,7 @@ class lib:
     except Exception as e:
       print(f'ERROR: {e}')
       time.sleep(3)
+      return 0
 
 
 if __name__ == '__main__':
@@ -195,20 +229,36 @@ if __name__ == '__main__':
     elif text.lower() == '::time':
       print(vars.now())
 
+    elif text.lower().split(' ')[0] == '::stall':
+      lib.stall()
+
     elif text.lower().split(' ')[0] == '::save':
       lib.saveText()
 
     elif text.lower().split(' ')[0] == '::load':
       lib.loadSave()
 
-    elif text.lower().split(' ')[0] == '::system':
-      os.system(f"{' '.join(text.lower().split(' ')[1:])}")
-
     elif text.lower().split(' ')[0] == '::open':
       lib.openFile()
 
+    elif text.lower().split(' ')[0] == '::log':
+      if len(text.split(' ')) > 1:
+        print(' '.join(text.split(' ')[1:]))
+      else:
+        print('No string provided, Example(::log Python Is Better).')
+
+    elif text.lower().split(' ')[0] == '::system':
+      if len(text.split(' ')) > 1:
+        command = ' '.join(text.lower().split(' ')[1:])
+        os.system(f"{command}")
+      else:
+        print('No command given, Example(::system time /t).')
+
     elif text.lower().split(' ')[0] == '::theme':
-      lib.changeTheme()
+      if len(text.split(' ')) > 1:
+        lib.changeTheme()
+      else:
+        print('Please pass 2 colors, Example(::theme blue white).')
 
     else:
       vars.output_log.append(text)
