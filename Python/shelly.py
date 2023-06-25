@@ -32,12 +32,12 @@ class lib:
   def quitProcess():
     os.system('Color C7')
     check = input('Are you sure you want to quit? (y/n): ')
-    if check == 'yes' or check == 'y':
+    if check.lower() == 'yes' or check.lower() == 'y':
       print('Quitting...')
       time.sleep(1)
       os.system('Color 07')
       sys.exit(0)
-    elif check == 'no' or check == 'n':
+    elif check.lower() == 'no' or check.lower() == 'n':
       print('Aborting...')
       time.sleep(1)
       os.system('Color 07')
@@ -65,6 +65,18 @@ class lib:
     else:
       save_file = f'{os.getcwd()}/save.txt'
     save_file = save_file.replace('\\', '/')
+
+    if os.path.exists(save_file):
+      overwrite = input(f'File {file} already exists, overwrite it? (y/n) ')
+      if overwrite.lower() == 'yes' or overwrite.lower() == 'y':
+        os.remove(save_file)
+      elif overwrite.lower() == 'no' or overwrite.lower() == 'n':
+        print('Aborting...')
+        time.sleep(1)
+        return 0
+      else:
+        print('Given input not recognized, restarting.')
+        lib.saveText()
     for item in vars.output_log:
       if '::' in item:
         vars.output_log.remove(item)
@@ -93,14 +105,17 @@ class lib:
     else:
       save_file = f'{os.getcwd()}/save.txt'
     save_file = save_file.replace('\\', '/')
-    with open(save_file, 'r') as save:
-      content = save.read()
-      for line in content.splitlines():
-        vars.ticker += 1
-        vars.output_log.append(line)
-        print(f'{vars.ticker}. {line}')
-      save.close()
-    print(f'Loaded text from {save_file}')
+    if os.path.exists(save_file):
+      with open(save_file, 'r') as save:
+        content = save.read()
+        for line in content.splitlines():
+          vars.ticker += 1
+          vars.output_log.append(line)
+          print(f'{vars.ticker}. {line}')
+        save.close()
+      print(f'Loaded text from {save_file}')
+    else:
+      print(f'Cannot detect save file, Looking-For: {save_file}.')
 
   def openFile():
     try:
@@ -215,53 +230,58 @@ class lib:
 
 
 if __name__ == '__main__':
-  while True:
-    vars.ticker += 1
-    text = input(f'{vars.ticker}. ')
+  try:
+    while True:
+      vars.ticker += 1
+      text = input(f'{vars.ticker}. ')
 
-    # ARGUMENT HANDLER #
-    if text.lower() == '::quit':
-      lib.quitProcess()
+      # ARGUMENT HANDLER #
+      if text.lower() == '::quit':
+        lib.quitProcess()
 
-    elif text.lower() == '::clear':
-      lib.clearPad()
+      elif text.lower() == '::clear':
+        lib.clearPad()
 
-    elif text.lower() == '::time':
-      print(vars.now())
+      elif text.lower() == '::time':
+        print(vars.now())
 
-    elif text.lower().split(' ')[0] == '::stall':
-      lib.stall()
+      elif text.lower().split(' ')[0] == '::stall':
+        lib.stall()
 
-    elif text.lower().split(' ')[0] == '::save':
-      lib.saveText()
+      elif text.lower().split(' ')[0] == '::save':
+        lib.saveText()
 
-    elif text.lower().split(' ')[0] == '::load':
-      lib.loadSave()
+      elif text.lower().split(' ')[0] == '::load':
+        lib.loadSave()
 
-    elif text.lower().split(' ')[0] == '::open':
-      lib.openFile()
+      elif text.lower().split(' ')[0] == '::open':
+        lib.openFile()
 
-    elif text.lower().split(' ')[0] == '::log':
-      if len(text.split(' ')) > 1:
-        print(' '.join(text.split(' ')[1:]))
+      elif text.lower().split(' ')[0] == '::log':
+        if len(text.split(' ')) > 1:
+          print(' '.join(text.split(' ')[1:]))
+        else:
+          print('No string provided, Example(::log Python Is Better).')
+
+      elif text.lower().split(' ')[0] == '::system':
+        if len(text.split(' ')) > 1:
+          command = ' '.join(text.lower().split(' ')[1:])
+          os.system(command)
+        else:
+          print('No command given, Example(::system time /t).')
+
+      elif text.lower().split(' ')[0] == '::theme':
+        if len(text.split(' ')) > 1:
+          lib.changeTheme()
+        else:
+          print('Please pass 2 colors, Example(::theme blue white).')
+
       else:
-        print('No string provided, Example(::log Python Is Better).')
+        vars.output_log.append(text)
 
-    elif text.lower().split(' ')[0] == '::system':
-      if len(text.split(' ')) > 1:
-        command = ' '.join(text.lower().split(' ')[1:])
-        os.system(f"{command}")
-      else:
-        print('No command given, Example(::system time /t).')
-
-    elif text.lower().split(' ')[0] == '::theme':
-      if len(text.split(' ')) > 1:
-        lib.changeTheme()
-      else:
-        print('Please pass 2 colors, Example(::theme blue white).')
-
-    else:
-      vars.output_log.append(text)
+  except Exception as e:
+    print(f'ERROR: {e}')
+    time.sleep(3)
 
 else:
   print(f"You can't import {__file__} you must run it.")
