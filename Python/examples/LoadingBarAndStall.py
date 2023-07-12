@@ -1,5 +1,6 @@
 import time
-import threading as THC # Peak humor
+import threading as THC
+# TODO: Move this to helper and add threading to helper functions
 
 
 def loadingBar(duration, endMsg=None, symbol=None):
@@ -57,5 +58,3 @@ def stall(duration):
       print('\\', end='\r') ; time.sleep(0.15)
   thread = THC.Thread(innerStall(duration))
   thread.start() ; thread.join()
-
-loadingBar(34)
