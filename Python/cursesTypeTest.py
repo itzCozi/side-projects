@@ -1,4 +1,6 @@
 # Make a type speed tester thing with curses in python and make a UI where you can select things like with the arrow keys and enter https://youtu.be/zwMsmBsC1GM
+# DISCLAIMER: Curses hates windows os use linux for best results
+
 try:
   import os, sys
   import curses
