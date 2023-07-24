@@ -63,8 +63,8 @@ class helper:
     iterated = []
     
     for char in range(len(text_list)):
-      if text_list.index(char) < index and text_list.index(char) not in iterated:
-        iterated.append(text_list.index(char)) ; helper.EZLog(str(text_list.index(char)))
+      if text_list[char] < index and text_list[char] not in iterated:
+        iterated.append(text_list[char]) ; helper.EZLog(str(text_list[char]))
         scr.attron(curses.color_pair(1))
         scr.addstr(char)
         scr.attroff(curses.color_pair(1))
