@@ -1,5 +1,6 @@
 # Make a type speed tester thing with curses in python and make a UI where you can select things like with the arrow keys and enter https://youtu.be/zwMsmBsC1GM
 # DISCLAIMER: Curses hates windows os use linux for best results
+# TODO: Link the menu to functions and fix colors on writeAndHighlight
 
 try:
   import os, sys
@@ -159,6 +160,7 @@ def typeTester(scr):  # The 'PLAY' function
     key = scr.getch()
     if ticker == len(string):
       scr.clear()
+      # Maybe make this say gibberish like animal crossing
       helper.centeredWrite(scr, 'YOU DID IT!', True)
       break
     elif key == ord(string[ticker]):  # Converts to ASCII
