@@ -1,13 +1,13 @@
 # Make a type speed tester thing with curses in python and make a UI where you can select things like with the arrow keys and enter https://youtu.be/zwMsmBsC1GM
 # DISCLAIMER: Curses hates windows os use linux for best results
-# TODO: Link the menu to functions
+# TODO: Make the options function
 
 try:
   import os, sys
   import curses
   import random
   import requests
-except Exception as e:
+except Exception:
   print('Win32 uses a diffrent library, run \'pip install windows-curses\' to fix this.')
   sys.exit(1)
 
@@ -21,6 +21,11 @@ VALID_COLORS = {
   'cyan': curses.COLOR_CYAN,
   'white': curses.COLOR_WHITE
 }
+GIBBERISH = [
+  '°', 'ξ', 'Ø', '¨', '∩', 'Φ', 'φ', '⏅',
+  'Ξ', '«', '»', '◊', '±', '⊗', '∴', '☍',
+  'ส','┌', 'ª', '‰', '¤', 'ð', '⚭', '⏦'
+]
 window = curses.initscr()
 window.keypad(True)
 curses.noecho()
@@ -28,6 +33,25 @@ curses.cbreak()
 
 
 class helper:
+
+  def gibberishGenerator():
+    # Returns a random gibberish string
+    length = random.randint(30, 100)
+    ret_value = []
+    chance = 0.26  # Chance to add spaces
+    ticker = 0
+
+    for i in range(length):
+      char = random.choice(GIBBERISH)
+      ret_value.append(char)
+    for cycle in range(length):
+      ticker += 1
+      if ticker >= length:
+        return ''.join(ret_value)
+      elif random.random() < chance and ret_value[ticker - 1] != ' ':
+        ret_value[ticker] = ' '
+      else:
+        continue
 
   def colorInterpreter(color):
     # Interprets colors for writeAndHighlight()
@@ -48,11 +72,11 @@ class helper:
     elif color.lower() == 'white':
       return curses.COLOR_WHITE
     else:
-      raise Exception('given parameter color is not valid')
+      raise Exception('Given parameter color is not valid')
 
   def generateSentence():
     # Generates a random sentence for type function
-    word_site = "https://www.mit.edu/~ecprice/wordlist.10000"
+    word_site = 'https://www.mit.edu/~ecprice/wordlist.10000'
     response = requests.get(word_site)
     baselist = []
     listA = []
@@ -80,7 +104,7 @@ class helper:
 
   def EZLog(message):  # Cant print when using curses so...
     if not isinstance(message, str):
-      raise Exception('message variable must be a string type')
+      raise Exception('Message variable must be a string type')
     if os.path.exists('log.txt'):
       with open('log.txt', 'a') as Fout:
         Fout.write(f'{message}\n')
@@ -104,7 +128,7 @@ class helper:
   def writeAndHighlight(scr, list, index, color):
     # Writes letters and highlights a char or multiple
     if color.lower() not in VALID_COLORS:
-      raise Exception('color variable was given a invaild color')
+      raise Exception('Color variable was given a invaild color')
     else:
       foreground = helper.colorInterpreter(color)
       curses.init_pair(1, foreground, curses.COLOR_BLACK)
@@ -118,13 +142,16 @@ class helper:
         scr.addstr(list[char])
       scr.refresh()
 
-  def centeredWrite(scr, text, slow):
+  def centeredWrite(scr, text, slow, newLine=None):
     # Writes to the current line but centers the text
     # TODO: Make this better and write in the middle of screen not top
     if not isinstance(slow, bool):
-      raise Exception('slow parameter must be a boolean')
+      raise Exception('Slow parameter must be a boolean')
     width = scr.getmaxyx()[1]
-    scr.move(scr.getyx()[0], int(width / 2 - len(text) / 2))
+    if newLine != None:
+      scr.move(scr.getyx()[0] + 1, int(width / 2 - len(text) / 2))
+    else:
+      scr.move(scr.getyx()[0], int(width / 2 - len(text) / 2))
     if slow == True:
       for char in text:
         scr.addstr(char)
@@ -189,16 +216,27 @@ def typeTester(scr):  # The 'PLAY' function
     key = scr.getch()
     if ticker == len(string):
       scr.clear()
-      # Maybe make this say gibberish like animal crossing
-      helper.centeredWrite(scr, 'YOU DID IT!', True)
+      helper.centeredWrite(scr, helper.gibberishGenerator(), True)
+      helper.centeredWrite(scr, 'Press any key to continue...', True, True)
+      scr.getch()
       break
     elif key == ord(string[ticker]):  # Converts to ASCII
       ticker += 1
       scr.clear()
-      helper.writeAndHighlight(scr, list(string), ticker, 'blue')
+      helper.writeAndHighlight(scr, list(string), ticker, 'green')
     else:
       continue
   curses.wrapper(typeTester)
 
 
-curses.wrapper(typeTester)
+def driver(scr):
+  choice = menu(scr)
+  if choice == 'PLAY':
+    typeTester(scr)
+  elif choice == 'OPTIONS':
+    raise Exception('Not implemented yet')  # Have to code this function
+  elif choice == 'EXIT':
+    sys.exit(0)
+
+
+curses.wrapper(driver)
