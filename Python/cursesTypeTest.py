@@ -1,6 +1,6 @@
 # Make a type speed tester thing with curses in python and make a UI where you can select things like with the arrow keys and enter https://youtu.be/zwMsmBsC1GM
 # DISCLAIMER: Curses hates windows os use linux for best results
-# TODO: Link the menu to functions and fix colors on writeAndHighlight
+# TODO: Link the menu to functions
 
 try:
   import os, sys
@@ -12,7 +12,14 @@ except Exception as e:
   sys.exit(1)
 
 VALID_COLORS = {
-  'black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'
+  'black': curses.COLOR_BLACK,
+  'red': curses.COLOR_RED,
+  'green': curses.COLOR_GREEN,
+  'yellow': curses.COLOR_YELLOW,
+  'blue': curses.COLOR_BLUE,
+  'magenta': curses.COLOR_MAGENTA,
+  'cyan': curses.COLOR_CYAN,
+  'white': curses.COLOR_WHITE
 }
 window = curses.initscr()
 window.keypad(True)
@@ -22,7 +29,29 @@ curses.cbreak()
 
 class helper:
 
+  def colorInterpreter(color):
+    # Interprets colors for writeAndHighlight()
+    if color.lower() == 'black':
+      return curses.COLOR_BLACK
+    elif color.lower() == 'red':
+      return curses.COLOR_RED
+    elif color.lower() == 'green':
+      return curses.COLOR_GREEN
+    elif color.lower() == 'yellow':
+      return curses.COLOR_YELLOW
+    elif color.lower() == 'blue':
+      return curses.COLOR_BLUE
+    elif color.lower() == 'magenta':
+      return curses.COLOR_MAGENTA
+    elif color.lower() == 'cyan':
+      return curses.COLOR_CYAN
+    elif color.lower() == 'white':
+      return curses.COLOR_WHITE
+    else:
+      raise Exception('given parameter color is not valid')
+
   def generateSentence():
+    # Generates a random sentence for type function
     word_site = "https://www.mit.edu/~ecprice/wordlist.10000"
     response = requests.get(word_site)
     baselist = []
@@ -73,12 +102,12 @@ class helper:
       curses.napms(pause)  # Waits the duration of pause in milliseconds
 
   def writeAndHighlight(scr, list, index, color):
-    # Writes letters slowley and highlights a char
-    # WARN: The 'color' variable does nothing as of now
-    if color not in VALID_COLORS:
+    # Writes letters and highlights a char or multiple
+    if color.lower() not in VALID_COLORS:
       raise Exception('color variable was given a invaild color')
     else:
-      curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
+      foreground = helper.colorInterpreter(color)
+      curses.init_pair(1, foreground, curses.COLOR_BLACK)
 
     for char in range(len(list)):
       if list.index(list[char]) < index and char < index:
@@ -166,7 +195,7 @@ def typeTester(scr):  # The 'PLAY' function
     elif key == ord(string[ticker]):  # Converts to ASCII
       ticker += 1
       scr.clear()
-      helper.writeAndHighlight(scr, list(string), ticker, 'green')
+      helper.writeAndHighlight(scr, list(string), ticker, 'blue')
     else:
       continue
   curses.wrapper(typeTester)
