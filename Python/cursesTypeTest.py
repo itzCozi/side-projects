@@ -11,6 +11,12 @@ except Exception:
   print('Win32 uses a diffrent library, run \'pip install windows-curses\' to fix this.')
   sys.exit(1)
 
+### Ease Of Use ###
+def throw(message):
+  raise Exception(message)
+NULL = None
+###################
+
 VALID_COLORS = {
   'black': curses.COLOR_BLACK,
   'red': curses.COLOR_RED,
@@ -26,6 +32,8 @@ GIBBERISH = [
   'Ξ', '«', '»', '◊', '±', '⊗', '∴', '☍',
   'ส','┌', 'ª', '‰', '¤', 'ð', '⚭', '⏦'
 ]
+
+# First lines ran (setup terminal)
 window = curses.initscr()
 window.keypad(True)
 curses.noecho()
@@ -72,7 +80,7 @@ class helper:
     elif color.lower() == 'white':
       return curses.COLOR_WHITE
     else:
-      raise Exception('Given parameter color is not valid')
+      throw('Given parameter color is not valid')
 
   def generateSentence():
     # Generates a random sentence for type function
@@ -104,7 +112,7 @@ class helper:
 
   def EZLog(message):  # Cant print when using curses so...
     if not isinstance(message, str):
-      raise Exception('Message variable must be a string type')
+      throw('Message variable must be a string type')
     if os.path.exists('log.txt'):
       with open('log.txt', 'a') as Fout:
         Fout.write(f'{message}\n')
@@ -128,7 +136,7 @@ class helper:
   def writeAndHighlight(scr, list, index, color):
     # Writes letters and highlights a char or multiple
     if color.lower() not in VALID_COLORS:
-      raise Exception('Color variable was given a invaild color')
+      throw('Color variable was given a invaild color')
     else:
       foreground = helper.colorInterpreter(color)
       curses.init_pair(1, foreground, curses.COLOR_BLACK)
@@ -146,7 +154,7 @@ class helper:
     # Writes to the current line but centers the text
     # TODO: Make this better and write in the middle of screen not top
     if not isinstance(slow, bool):
-      raise Exception('Slow parameter must be a boolean')
+      throw('Slow parameter must be a boolean')
     width = scr.getmaxyx()[1]
     if newLine != None:
       scr.move(scr.getyx()[0] + 1, int(width / 2 - len(text) / 2))
@@ -223,7 +231,7 @@ def typeTester(scr):  # The 'PLAY' function
     elif key == ord(string[ticker]):  # Converts to ASCII
       ticker += 1
       scr.clear()
-      helper.writeAndHighlight(scr, list(string), ticker, 'green')
+      helper.writeAndHighlight(scr, list(string), ticker, 'magenta')
     else:
       continue
   curses.wrapper(typeTester)
@@ -234,9 +242,10 @@ def driver(scr):
   if choice == 'PLAY':
     typeTester(scr)
   elif choice == 'OPTIONS':
-    raise Exception('Not implemented yet')  # Have to code this function
+    throw('Not implemented yet')  # Have to code this function
   elif choice == 'EXIT':
     sys.exit(0)
 
 
 curses.wrapper(driver)
+
