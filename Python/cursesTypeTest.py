@@ -1,7 +1,7 @@
 # Make a type speed tester thing with curses in python and make a UI where you can select things like with the arrow keys and enter https://youtu.be/zwMsmBsC1GM
 # DISCLAIMER: Curses hates windows os use linux for best results
 # TODO: Add a way to skip the recall or return to menu
-# TODO: Make the options function / reformat
+# TODO: Make the options work in menuBranch.userConfig()
 
 try:
   import os, sys
@@ -9,8 +9,11 @@ try:
   import random
   import requests
 except Exception:
-  print('Win32 uses a diffrent library, run \'pip install windows-curses\' to fix this.')
+  print(
+    'Win32 uses a diffrent library, run \'pip install windows-curses\' to fix this.'
+  )
   sys.exit(1)
+
 
 ### Ease Of Use ###
 def throw(message):
@@ -30,8 +33,8 @@ VALID_COLORS = {
 }
 GIBBERISH = [
   '°', 'ξ', 'Ø', '¨', '∩', 'Φ', 'φ', '⏅',
-  'Ξ', '«', '»', '◊', '±', '⊗', '∴', '☍',
-  'ส','┌', 'ª', '‰', '¤', 'ð', '⚭', '⏦'
+  'Ξ', '«', '»', '◊', '±', '⊗', '∴', '⏦'
+  '☍', 'ส', '┌', 'ª', '‰', '¤', 'ð', '⚭'
 ]
 
 # First lines ran (setup terminal)
@@ -127,6 +130,7 @@ class helper:
   def exit():
     # Restores terminal to initial settings and safely exits
     curses.endwin()
+    print('Program exited successfully, terminal restored to default.')
     sys.exit(0)
 
   def slowWrite(scr, text, pause):
@@ -178,8 +182,79 @@ class helper:
     return height, width
 
 
+class menuBranch:  # Functions that menu() braches to
+
+  def typeTester(scr):  # The 'PLAY' function
+    scr.clear()
+    string = helper.generateSentence()
+    helper.slowWrite(scr, string, 20)
+    loop = True
+    ticker = 0
+
+    while loop == True:
+      key = scr.getch()
+      if ticker == len(string):
+        scr.clear()
+        helper.centeredWrite(scr, helper.gibberishGenerator(), True)
+        helper.centeredWrite(scr, 'Press any key to continue...', True, True)
+        scr.getch()
+        break
+      elif key == ord(string[ticker]):  # Converts to ASCII
+        ticker += 1
+        scr.clear()
+        helper.writeAndHighlight(scr, list(string), ticker, 'magenta')
+      else:
+        continue
+    curses.wrapper(menuBranch.typeTester)  # Recalls itself
+
+  def userConfig(scr):  # The 'OPTIONS' function
+    scr.clear()
+    h, w = helper.maxSize(scr)
+    options_items = ['BACKGROUND COLOR', 'HIGHLIGHT COLOR', 'POST-PLAY GIBBERISH', 'BACK']
+
+    def printMenu(selected_row):
+      for item in options_items:
+        index = options_items.index(item)
+        x = int(w / 2 - len(item) / 2)
+        y = int(h / 2 - len(options_items) / 2 + index)
+        if index == selected_row:
+          scr.addstr(y, x, item, curses.A_STANDOUT)
+        else:
+          scr.addstr(y, x, item)
+      scr.refresh()
+
+    curses.curs_set(0)
+    current_row = 0
+    printMenu(current_row)
+    loop = True
+
+    while loop == True:
+      key = scr.getch()
+      scr.clear()
+
+      if key == curses.KEY_UP and current_row > 0:
+        current_row -= 1
+      elif key == curses.KEY_DOWN and current_row < len(options_items) - 1:
+        current_row += 1
+      elif key in [10, 13]:
+        selected = options_items[current_row]
+        break
+
+      printMenu(current_row)
+
+    if selected == options_items[0]:
+      throw('Option is not yet implemented')
+    elif selected == options_items[1]:
+      throw('Option is not yet implemented')
+    elif selected == options_items[2]:
+      throw('Option is not yet implemented')
+    elif selected == options_items[3]:
+      driver(scr)
+
+
 def menu(scr):
   # Add this function to helper call it 'ezmenu' or something
+  scr.clear()
   h, w = helper.maxSize(scr)
   menu_items = ['PLAY', 'OPTIONS', 'EXIT']
 
@@ -216,46 +291,14 @@ def menu(scr):
   return selected
 
 
-class menuBranch:  # Functions that menu braches to
-
-  def typeTester(scr):  # The 'PLAY' function
-    scr.clear()
-    string = helper.generateSentence()
-    helper.slowWrite(scr, string, 20)
-    loop = True
-    ticker = 0
-
-    while loop == True:
-      key = scr.getch()
-      if ticker == len(string):
-        scr.clear()
-        helper.centeredWrite(scr, helper.gibberishGenerator(), True)
-        helper.centeredWrite(scr, 'Press any key to continue...', True, True)
-        scr.getch()
-        break
-      elif key == ord(string[ticker]):  # Converts to ASCII
-        ticker += 1
-        scr.clear()
-        helper.writeAndHighlight(scr, list(string), ticker, 'magenta')
-      else:
-        continue
-    curses.wrapper(menuBranch.typeTester)  # Recalls itself need to make a way to skip this or return to menu
-  
-  def options(scr):  # The 'OPTIONS' function
-    scr.clear()
-    options_items = ['BACKGROUND COLOR', 'HIGHLIGHT COLOR', 'POST-PLAY GIBBERISH', 'BACK']
-    # Reuse menu() and printMenu() functions for each option
-
-
 def driver(scr):
   choice = menu(scr)
   if choice == 'PLAY':
     menuBranch.typeTester(scr)
   elif choice == 'OPTIONS':
-    throw('Not implemented yet')  # Have to code this function
+    menuBranch.userConfig(scr)
   elif choice == 'EXIT':
     helper.exit()
 
 
 curses.wrapper(driver)
-
