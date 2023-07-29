@@ -21,16 +21,16 @@ def throw(message):
 NULL = None
 ###################
 
-VALID_COLORS = {
-  'black': curses.COLOR_BLACK,
-  'red': curses.COLOR_RED,
-  'green': curses.COLOR_GREEN,
-  'yellow': curses.COLOR_YELLOW,
-  'blue': curses.COLOR_BLUE,
-  'magenta': curses.COLOR_MAGENTA,
-  'cyan': curses.COLOR_CYAN,
-  'white': curses.COLOR_WHITE
-}
+VALID_COLORS = [
+  'black',
+  'red',
+  'green',
+  'yellow',
+  'blue',
+  'magenta',
+  'cyan',
+  'white'
+]
 GIBBERISH = [
   '°', 'ξ', 'Ø', '¨', '∩', 'Φ', 'φ', '⏅',
   'Ξ', '«', '»', '◊', '±', '⊗', '∴', '⏦'
@@ -213,11 +213,11 @@ class menuBranch:  # Functions that menu() braches to
     h, w = helper.maxSize(scr)
     options_items = ['BACKGROUND COLOR', 'HIGHLIGHT COLOR', 'POST-PLAY GIBBERISH', 'BACK']
 
-    def printMenu(selected_row):
-      for item in options_items:
-        index = options_items.index(item)
+    def printMenu(selected_row, list):
+      for item in list:
+        index = list.index(item)
         x = int(w / 2 - len(item) / 2)
-        y = int(h / 2 - len(options_items) / 2 + index)
+        y = int(h / 2 - len(list) / 2 + index)
         if index == selected_row:
           scr.addstr(y, x, item, curses.A_STANDOUT)
         else:
@@ -226,7 +226,7 @@ class menuBranch:  # Functions that menu() braches to
 
     curses.curs_set(0)
     current_row = 0
-    printMenu(current_row)
+    printMenu(current_row, options_items)
     loop = True
 
     while loop == True:
@@ -241,7 +241,7 @@ class menuBranch:  # Functions that menu() braches to
         selected = options_items[current_row]
         break
 
-      printMenu(current_row)
+      printMenu(current_row, options_items)
 
     if selected == options_items[0]:
       throw('Option is not yet implemented')
@@ -259,11 +259,11 @@ def menu(scr):
   h, w = helper.maxSize(scr)
   menu_items = ['PLAY', 'OPTIONS', 'EXIT']
 
-  def printMenu(selected_row):
-    for item in menu_items:
-      index = menu_items.index(item)
+  def printMenu(selected_row, list):
+    for item in list:
+      index = list.index(item)
       x = int(w / 2 - len(item) / 2)
-      y = int(h / 2 - len(menu_items) / 2 + index)
+      y = int(h / 2 - len(list) / 2 + index)
       if index == selected_row:
         scr.addstr(y, x, item, curses.A_STANDOUT)
       else:
@@ -272,7 +272,7 @@ def menu(scr):
 
   curses.curs_set(0)
   current_row = 0
-  printMenu(current_row)
+  printMenu(current_row, menu_items)
   loop = True
 
   while loop == True:
@@ -287,7 +287,7 @@ def menu(scr):
       selected = menu_items[current_row]
       break
 
-    printMenu(current_row)
+    printMenu(current_row, menu_items)
 
   return selected
 
