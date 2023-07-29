@@ -1,6 +1,7 @@
 # Make a type speed tester thing with curses in python and make a UI where you can select things like with the arrow keys and enter https://youtu.be/zwMsmBsC1GM
 # DISCLAIMER: Curses hates windows os use linux for best results
-# TODO: Make the options function
+# TODO: Add a way to skip the recall or return to menu
+# TODO: Make the options function / reformat
 
 try:
   import os, sys
@@ -111,6 +112,7 @@ class helper:
     return ret_string + '.'
 
   def EZLog(message):  # Cant print when using curses so...
+    # Only used in dev for unit testing
     if not isinstance(message, str):
       throw('Message variable must be a string type')
     if os.path.exists('log.txt'):
@@ -123,8 +125,9 @@ class helper:
         Fout2.close()
 
   def exit():
-    # Safely exits and restore terminal to initial settings
+    # Restores terminal to initial settings and safely exits
     curses.endwin()
+    sys.exit(0)
 
   def slowWrite(scr, text, pause):
     # Wrapper for curses.addstr() which writes the text slowly
@@ -213,38 +216,45 @@ def menu(scr):
   return selected
 
 
-def typeTester(scr):  # The 'PLAY' function
-  scr.clear()
-  string = helper.generateSentence()
-  helper.slowWrite(scr, string, 20)
-  loop = True
-  ticker = 0
+class menuBranch:  # Functions that menu braches to
 
-  while loop == True:
-    key = scr.getch()
-    if ticker == len(string):
-      scr.clear()
-      helper.centeredWrite(scr, helper.gibberishGenerator(), True)
-      helper.centeredWrite(scr, 'Press any key to continue...', True, True)
-      scr.getch()
-      break
-    elif key == ord(string[ticker]):  # Converts to ASCII
-      ticker += 1
-      scr.clear()
-      helper.writeAndHighlight(scr, list(string), ticker, 'magenta')
-    else:
-      continue
-  curses.wrapper(typeTester)
+  def typeTester(scr):  # The 'PLAY' function
+    scr.clear()
+    string = helper.generateSentence()
+    helper.slowWrite(scr, string, 20)
+    loop = True
+    ticker = 0
+
+    while loop == True:
+      key = scr.getch()
+      if ticker == len(string):
+        scr.clear()
+        helper.centeredWrite(scr, helper.gibberishGenerator(), True)
+        helper.centeredWrite(scr, 'Press any key to continue...', True, True)
+        scr.getch()
+        break
+      elif key == ord(string[ticker]):  # Converts to ASCII
+        ticker += 1
+        scr.clear()
+        helper.writeAndHighlight(scr, list(string), ticker, 'magenta')
+      else:
+        continue
+    curses.wrapper(menuBranch.typeTester)  # Recalls itself need to make a way to skip this or return to menu
+  
+  def options(scr):  # The 'OPTIONS' function
+    scr.clear()
+    options_items = ['BACKGROUND COLOR', 'HIGHLIGHT COLOR', 'POST-PLAY GIBBERISH', 'BACK']
+    # Reuse menu() and printMenu() functions for each option
 
 
 def driver(scr):
   choice = menu(scr)
   if choice == 'PLAY':
-    typeTester(scr)
+    menuBranch.typeTester(scr)
   elif choice == 'OPTIONS':
     throw('Not implemented yet')  # Have to code this function
   elif choice == 'EXIT':
-    sys.exit(0)
+    helper.exit()
 
 
 curses.wrapper(driver)
