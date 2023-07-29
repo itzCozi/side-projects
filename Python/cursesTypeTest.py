@@ -193,6 +193,7 @@ class menuBranch:  # Functions that menu() braches to
 
     while loop == True:
       key = scr.getch()
+      # IDEA: Maybe if key is equal to 'esc' go to driver()
       if ticker == len(string):
         scr.clear()
         helper.centeredWrite(scr, helper.gibberishGenerator(), True)
