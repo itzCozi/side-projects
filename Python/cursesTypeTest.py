@@ -9,9 +9,7 @@ try:
   import random
   import requests
 except Exception:
-  print(
-    'Win32 uses a diffrent library, run \'pip install windows-curses\' to fix this.'
-  )
+  print('Win32 uses a diffrent library, run \'pip install windows-curses\' to fix this.')
   sys.exit(1)
 
 
@@ -33,7 +31,7 @@ VALID_COLORS = [
 ]
 GIBBERISH = [
   '°', 'ξ', 'Ø', '¨', '∩', 'Φ', 'φ', '⏅',
-  'Ξ', '«', '»', '◊', '±', '⊗', '∴', '⏦'
+  'Ξ', '«', '»', '◊', '±', '⊗', '∴', '⏦',
   '☍', 'ส', '┌', 'ª', '‰', '¤', 'ð', '⚭'
 ]
 
@@ -159,7 +157,6 @@ class helper:
 
   def centeredWrite(scr, text, slow, newLine=None):
     # Writes to the current line but centers the text
-    # TODO: Make this better and write in the middle of screen not top
     if not isinstance(slow, bool):
       throw('Slow parameter must be a boolean')
     width = scr.getmaxyx()[1]
