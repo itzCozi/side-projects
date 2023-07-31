@@ -243,6 +243,9 @@ class menuBranch:  # Functions that menu() braches to
 
       printMenu(current_row, options_items)
 
+    # I dont wanna code rn but i am just going to print
+    # the colors and get inputs after i restore terminal
+    # to default using curses.endwin() 👍
     if selected == options_items[0]:
       throw('Option is not yet implemented')
     elif selected == options_items[1]:
