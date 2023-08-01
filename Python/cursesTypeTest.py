@@ -242,9 +242,22 @@ class menuBranch:  # Functions that menu() braches to
 
     # I dont wanna code rn but i am just going to print
     # the colors and get inputs after i restore terminal
-    # to default using curses.endwin() 👍
+    # to default using curses.endwin() [1/3]
+    def getColorInput():
+      os.system('cls')  # Cant use scr.clear() cuz of curses.endwin()
+      for item in VALID_COLORS:
+        print(item)
+      choice = input('\nPlease pick from the above colors: ')
+      return choice
+
     if selected == options_items[0]:
-      throw('Option is not yet implemented')
+      curses.endwin()
+      if getColorInput() not in VALID_COLORS:
+        getColorInput()
+      else:
+        # Make a new color pair with the defined color
+        # by running through helper.colorInterpreter()
+        pass
     elif selected == options_items[1]:
       throw('Option is not yet implemented')
     elif selected == options_items[2]:
