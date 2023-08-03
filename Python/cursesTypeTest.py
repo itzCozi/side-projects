@@ -1,7 +1,7 @@
 # Make a type speed tester thing with curses in python and make a UI where you can select things like with the arrow keys and enter https://youtu.be/zwMsmBsC1GM
 # DISCLAIMER: Curses hates windows os use linux for best results
-# TODO: Add a way to skip the recall or return to menu (look at typeTester() for IDEA)
-
+# DISCLAIMER: Test the 'esc' -> home function on windows-curses!!
+# TODO: Maybe make a way to highlight wrong or miss-typed chars to red instead of ignoring it
 try:
   import os, sys
   import curses
@@ -43,11 +43,15 @@ curses.cbreak()
 
 class globals:
   toggle_gibberish = True  # True = on / False = off
-  foreground = curses.COLOR_WHITE
+  foreground = curses.COLOR_GREEN
   background = curses.COLOR_BLACK
 
 
 class helper:
+  
+  def clear():
+    if 'linux' in sys.platform: os.system('clear')
+    else: os.system('cls')
 
   def gibberishGenerator():
     # Returns a random gibberish string
@@ -191,15 +195,16 @@ class menuBranch:  # Functions that menu() braches to
 
     while loop == True:
       key = scr.getch()
-      # IDEA: Maybe if key is equal to 'esc' go to driver()
-      if ticker == len(string):
+      if key == 27:  # If key is 'esc' go home
+        driver(scr)
+      elif ticker == len(string):  # If user typed entire string
         scr.clear()
         if globals.toggle_gibberish == True:
           helper.centeredWrite(scr, helper.gibberishGenerator(), True)
         helper.centeredWrite(scr, 'Press any key to continue...', True, True)
         scr.getch()
         break
-      elif key == ord(string[ticker]):  # Converts to ASCII
+      elif key == ord(string[ticker]):  # If user's key == correct key
         ticker += 1
         scr.clear()
         helper.writeAndHighlight(scr, list(string), ticker)
@@ -244,9 +249,9 @@ class menuBranch:  # Functions that menu() braches to
 
     # I dont wanna code rn but i am just going to print
     # the colors and get inputs after i restore terminal
-    # to default using curses.endwin() [1/3]
+    # to default using curses.endwin() [3/3]
     def getColorInput():
-      os.system('cls')  # Cant use scr.clear() cuz of curses.endwin()
+      helper.clear()  # Cant use scr.clear() cuz of curses.endwin()
       for item in VALID_COLORS:
         print(item)
       choice = input('\nPlease pick from the above colors: ')
@@ -281,7 +286,7 @@ class menuBranch:  # Functions that menu() braches to
 
     elif selected == options_items[3]:
       driver(scr)
-    os.system('cls')
+    helper.clear() 
     driver(scr)
 
 
