@@ -1,7 +1,6 @@
 # Make a type speed tester thing with curses in python and make a UI where you can select things like with the arrow keys and enter https://youtu.be/zwMsmBsC1GM
 # DISCLAIMER: Curses hates windows os use linux for best results
-# TODO: Add a way to skip the recall or return to menu
-# TODO: Make the options work in menuBranch.userConfig()
+# TODO: Add a way to skip the recall or return to menu (look at typeTester() for IDEA)
 
 try:
   import os, sys
@@ -40,6 +39,12 @@ window = curses.initscr()
 window.keypad(True)
 curses.noecho()
 curses.cbreak()
+
+
+class globals:
+  toggle_gibberish = True  # True = on / False = off
+  foreground = curses.COLOR_WHITE
+  background = curses.COLOR_BLACK
 
 
 class helper:
@@ -138,13 +143,9 @@ class helper:
       scr.refresh()
       curses.napms(pause)  # Waits the duration of pause in milliseconds
 
-  def writeAndHighlight(scr, list, index, color):
+  def writeAndHighlight(scr, list, index):
     # Writes letters and highlights a char or multiple
-    if color.lower() not in VALID_COLORS:
-      throw('Color variable was given a invaild color')
-    else:
-      foreground = helper.colorInterpreter(color)
-      curses.init_pair(1, foreground, curses.COLOR_BLACK)
+    curses.init_pair(1, globals.foreground, globals.background)
 
     for char in range(len(list)):
       if list.index(list[char]) < index and char < index:
@@ -193,14 +194,15 @@ class menuBranch:  # Functions that menu() braches to
       # IDEA: Maybe if key is equal to 'esc' go to driver()
       if ticker == len(string):
         scr.clear()
-        helper.centeredWrite(scr, helper.gibberishGenerator(), True)
+        if globals.toggle_gibberish == True:
+          helper.centeredWrite(scr, helper.gibberishGenerator(), True)
         helper.centeredWrite(scr, 'Press any key to continue...', True, True)
         scr.getch()
         break
       elif key == ord(string[ticker]):  # Converts to ASCII
         ticker += 1
         scr.clear()
-        helper.writeAndHighlight(scr, list(string), ticker, 'magenta')
+        helper.writeAndHighlight(scr, list(string), ticker)
       else:
         continue
     curses.wrapper(menuBranch.typeTester)  # Recalls itself
@@ -208,7 +210,7 @@ class menuBranch:  # Functions that menu() braches to
   def userConfig(scr):  # The 'OPTIONS' function
     scr.clear()
     h, w = helper.maxSize(scr)
-    options_items = ['BACKGROUND COLOR', 'HIGHLIGHT COLOR', 'POST-PLAY GIBBERISH', 'BACK']
+    options_items = ['HIGHLIGHT COLOR', 'FOREGROUND COLOR', 'POST-PLAY GIBBERISH', 'BACK']
 
     def printMenu(selected_row, list):
       for item in list:
@@ -250,20 +252,37 @@ class menuBranch:  # Functions that menu() braches to
       choice = input('\nPlease pick from the above colors: ')
       return choice
 
+    curses.endwin()
     if selected == options_items[0]:
-      curses.endwin()
-      if getColorInput() not in VALID_COLORS:
+      color = getColorInput()
+      if color not in VALID_COLORS:
         getColorInput()
       else:
-        # Make a new color pair with the defined color
-        # by running through helper.colorInterpreter()
-        pass
+        globals.background = helper.colorInterpreter(color)
+        print(f'Background color updated to {color}.')
+        input('Press \'Enter\' to continue...')
+
     elif selected == options_items[1]:
-      throw('Option is not yet implemented')
+      color = getColorInput()
+      if color not in VALID_COLORS:
+        getColorInput()
+      else:
+        globals.foreground = helper.colorInterpreter(color)
+        print(f'Foreground color updated to {color}.')
+        input('Press \'Enter\' to continue...')
+
     elif selected == options_items[2]:
-      throw('Option is not yet implemented')
+      if globals.toggle_gibberish == True:
+        globals.toggle_gibberish = False ; res = 'OFF'
+      else:
+        globals.toggle_gibberish = True ; res = 'ON'
+      print(f'Post-play gibberish update to {res}.')
+      input('Press \'Enter\' to continue...')
+
     elif selected == options_items[3]:
       driver(scr)
+    os.system('cls')
+    driver(scr)
 
 
 def menu(scr):
