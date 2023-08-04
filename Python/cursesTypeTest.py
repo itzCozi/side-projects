@@ -2,6 +2,9 @@
 # DISCLAIMER: Curses hates windows os use linux for best results
 # DISCLAIMER: Test the 'esc' -> home function on windows-curses!!
 # TODO: Maybe make a way to highlight wrong or miss-typed chars to red instead of ignoring it
+# TODO: Make spaces correctly typed underscores
+# TODO: Make windows VM on coopers-epic-laptop-of-doom
+
 try:
   import os, sys
   import curses
