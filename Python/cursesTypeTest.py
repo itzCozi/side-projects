@@ -3,7 +3,7 @@
 # DISCLAIMER: Test the 'esc' -> home function on windows-curses!!
 # TODO: Maybe make a way to highlight wrong or miss-typed chars to red instead of ignoring it
 # TODO: Make spaces correctly typed underscores
-# TODO: Make windows VM on coopers-epic-laptop-of-doom
+# TODO: Make windows VM on coopers-epic-laptop-of-doom and uninstall escape from tarkov and sp tarkov
 
 try:
   import os, sys
