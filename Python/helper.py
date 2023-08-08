@@ -1,4 +1,4 @@
-# This file is a library for commonly used functions
+# THIS IS ALSO OUTDATED PLEASE LOOK TO https://github.com/itzCozi/Helper
 # OS: Windows10
 # PY-VERSION: 3.11+
 # RIPPED-FROM: https://github.com/itzCozi/Helper
