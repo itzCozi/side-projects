@@ -26,6 +26,17 @@ class vars:  # Variable class/container
 
 
 class functions:
+  
+  def uniqueIDGen():
+    charset = string.ascii_uppercase + string.digits
+    retlist = []
+    length = 8
+    for i in range(length):
+      retlist.append(random.choice(charset))
+    random.shuffle(retlist)
+    retlist.insert(4, '-')
+
+    return ''.join(retlist)
 
   def getUptime():
     lib = ctypes.windll.kernel32
