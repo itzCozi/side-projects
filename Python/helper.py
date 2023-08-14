@@ -1,7 +1,6 @@
-# THIS IS ALSO OUTDATED PLEASE LOOK TO https://github.com/itzCozi/Helper
 # OS: Windows10
 # PY-VERSION: 3.11+
-# RIPPED-FROM: https://github.com/itzCozi/Helper
+# GITHUB: https://github.com/itzCozi/Helper
 
 try:
   import os, sys
@@ -9,6 +8,9 @@ try:
   import time
   import string
   import random
+  import ctypes
+  import hashlib
+  import threading as THC
   from cryptography.fernet import Fernet
 except Exception as e:
   print(f'ERROR: An error occurred when importing dependencies. \n{e}\n')
@@ -24,6 +26,78 @@ class vars:  # Variable class/container
 
 
 class functions:
+
+  def getUptime():
+    lib = ctypes.windll.kernel32
+    t = lib.GetTickCount64()
+    t = int(str(t)[:-3])
+    mins, sec = divmod(t, 60)
+    hour, mins = divmod(mins, 60)
+    days, hour = divmod(hour, 24)
+    return(f'{days} days, {hour:02}:{mins:02}')
+
+  def isdivisable(m, n):
+    return True if m % n == 0 else False
+
+  def loadingBar(duration, endMsg=None, symbol=None):
+    if not isinstance(duration, int):
+      raise Exception('duration variable must be a integer')
+    if endMsg != None:
+      if not isinstance(endMsg, str):
+        raise Exception('endMsg variable must be a string')
+    else:
+      endMsg = 'Operation Finished.'
+    if symbol != None:
+      if not isinstance(symbol, str):
+        raise Exception('symbol variable must be a string')
+    else:
+      symbol = '#'
+    cycle_time = round(duration / 100, 2)
+    bar = [
+      '[', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+      ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+      ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+      ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+      ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+      ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+      ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+      ' ', ' ', ' ', ']'
+    ]
+
+    def innerBar():
+      ticker = 0
+      clear = '\x1b[2K'
+      for cycle in range(0, 100):
+        ticker += 1
+        bar[ticker] = symbol
+        percent = f' {ticker}%\r'
+        print(''.join(bar), end=percent)
+        time.sleep(cycle_time)
+      print(clear, end='\r')
+      print(endMsg)
+
+    thread = THC.Thread(innerBar())
+    thread.start()
+    thread.join()
+
+  def stall(duration):
+    if not isinstance(duration, int):
+      raise Exception('duration variable must be a integer')
+
+    def innerStall(arg):
+      for cycle in range(arg):
+        print('|', end='\r')
+        time.sleep(0.15)
+        print('/', end='\r')
+        time.sleep(0.15)
+        print('-', end='\r')
+        time.sleep(0.15)
+        print('\\', end='\r')
+        time.sleep(0.15)
+
+    thread = THC.Thread(innerStall(duration))
+    thread.start()
+    thread.join()
 
   def genID():
     # Creates a unique ID
@@ -294,44 +368,31 @@ class functions:
 
 class crypto:
 
-  def encrypt(file):
-    # Encrypt the given file and return a key
+  def hashFile(file):
+    # Returns the hash of the given file
     if not os.path.exists(file):
       print(f'ERROR: Could not find {file}.')
       sys.exit(1)
 
-    key = Fernet.generate_key()
-    fernet = Fernet(key)
+    obj = hashlib.sha1()
 
     with open(file, 'rb') as Fin:
-      original = Fin.read()
-      Fin.close()
-    encrypted = fernet.encrypt(original)
+      chunk = 0
+      while chunk != b'':
+        chunk = Fin.read(1024)
+        obj.update(chunk)
+    return obj.hexdigest()
 
-    with open(file, 'wb') as Fout:
-      Fout.write(encrypted)
-      Fout.close()
-    return key
-
-  def decrypt(file, key):
-    # Decrypt an encrypted file with a key
-    if not os.path.exists(file):
-      print(f'ERROR: Could not find {file}.')
+  def hashString(target):
+    if not isinstance(target, str):
+      print('ERROR: Given variable target is not a string.')
       sys.exit(1)
 
-    fernet = Fernet(key)
+    encoded = target.encode()
+    obj = hashlib.sha1(encoded)
+    hex_value = obj.hexdigest()
 
-    with open(file, 'rb') as Fin:
-      encrypted = Fin.read()
-      Fin.close()
-    decrypted = fernet.decrypt(encrypted)
-
-    with open(file, 'wb') as Fout:
-      Fout.write(decrypted)
-      Fout.close()
-
-
-class crypto:
+    return str(hex_value)
 
   def encrypt(file):
     # Encrypt the given file and return a key
