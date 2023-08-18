@@ -6,7 +6,7 @@ from mss import mss
 
 # TODO: Add a webcam capture command that sends pics from webcam!
 
-token = 'MTEzODU0OTQwMzc4Nzk5MzEwOA.GXK6b5.ZAUDFhChyDpGi0qiBEGYxgxLCarQEilrDXtpIo'
+token = '****REPLACE****'
 bot = discord.Bot()
 
 
