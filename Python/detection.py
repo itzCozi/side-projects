@@ -1,3 +1,5 @@
+# PROJECT MOVED TO: https://github.com/itzCozi/Scout-Detection
+
 try:
   import numpy as np
   import os, sys
