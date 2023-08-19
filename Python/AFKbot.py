@@ -6,7 +6,7 @@ from mss import mss
 
 # TODO: Add a webcam capture command that sends pics from webcam!
 
-token = '****REPLACE****'
+token = 'MTEzODU0OTQwMzc4Nzk5MzEwOA.G3_x7a.U4aDNVZm2RJeNDp6M2iFzVtul-1uT0hudOlItI'  # DONT COMMIT THIS PLEASE!
 bot = discord.Bot()
 
 
@@ -42,6 +42,11 @@ async def on_ready():
   print('Status: READY...\n')
 
 
+@bot.slash_command(name='ping', description='Get bot latency')
+async def ping(ctx):
+  await ctx.respond(f'ET latency: {round(bot.latency, 1)}')
+
+
 @bot.slash_command(name='send-input', description='Sends a input to computer')
 async def sendInput(ctx):
   key = 'f15'
@@ -58,15 +63,22 @@ async def heartbeat(ctx):
 async def passcmd(ctx, command):
   out = os.popen(command).read()
   if out != '':
-    await ctx.send(out)
+    await ctx.respond(out)
   else:
-    await ctx.send('Command returned a blank string')
+    await ctx.respond('Command returned a blank string')
+
+
+@bot.slash_command(name='shutdown', description='Shuts down PC')
+async def shutdown(ctx):
+  shutdown_cmd = 'shutdown /s'
+  os.system(shutdown_cmd)
+  await ctx.respond('PC shutting down, ET going offline...')
 
 
 @bot.slash_command(name='uptime', description='Get computer uptime')
 async def uptime(ctx):
   time = funcs.getUptime()
-  await ctx.send(time)
+  await ctx.respond(time)
 
 
 @bot.slash_command(name='screenshot', description='Get a screenshot from the computer')
@@ -80,10 +92,8 @@ async def screenshot(ctx):
   with open(screen2, 'rb') as f2:
     picture2 = discord.File(f2)
 
-  await ctx.send('Monitor 1', file=picture1)
-  await ctx.send('Monitor 2', file=picture2)
-  os.remove(screen1)
-  os.remove(screen2)
+  await ctx.respond('Monitor 1', file=picture1)
+  await ctx.respond('Monitor 2', file=picture2)
 
 
 def start():
