@@ -8,9 +8,10 @@ class globals:
   CP_compiler = r'c:\MinGW\bin\g++.exe'  # CP is a shorthand for C plus plus (C++)
   compiler_type = None  # Changes during runtime depending on C or C++ file
 
+
 class main:
   # I just like classes
-  
+
   try:
     if __file__.endswith('.py'):
       arg1 = sys.argv[1].lower()
@@ -20,7 +21,7 @@ class main:
       arg2 = sys.argv[1].lower()
   except:
     pass
-  
+
   def compileFile1(exe_name: str, source_file: str) -> None:
     if '.exe' in exe_name:
       exe_name = exe_name.replace('.exe', '')
@@ -36,10 +37,11 @@ class main:
       cmd = f'{globals.CP_compiler} {source_file}.cpp -o {exe_name}.exe'
       print(cmd)
       os.system(cmd)
-      
+
   def standardCompile():
     source_file_name = main.arg1
     executable_name = main.arg2
     main.compileFile1(executable_name, source_file_name)
+
 
 main.standardCompile()
