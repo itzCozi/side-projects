@@ -8,7 +8,7 @@ from colorama import Fore, Back, Style
 * All functions use camelCase and variables use snake_case
 * See if dragging files on top of the program show the file
 as a virtual argument
-* See if i can allow the user to compile files into multiple binaries
+* See if i can add a function to write cmake files to compile mitlipe source files
 https://stackoverflow.com/questions/5950395/makefile-to-compile-multiple-c-programs
 * COMPILE TO .EXE WHEN DONE CODING
 '''
@@ -30,16 +30,16 @@ class vars:
   CPP_compiler = r'c:\MinGW\bin\g++.exe'
 
 
-class main:
-  # Only can compile .o, .c, .cpp and .h -> .EXE (NOT .DLL)
+class core:
+  # Only can compile .o, .c, .cpp and .h
 
   @staticmethod
   def compilationCall() -> None:
-    arg_table = main.determineArguments()
+    arg_table = core.determineArguments()
     if 'dll_name' in arg_table:
-      main.compileDLL(arg_table)
+      core.compileDLL(arg_table)
     elif 'exe_name' in arg_table:
-      main.compileFiles(arg_table)
+      core.compileFiles(arg_table)
     else:
       print('Neither "exe_name" or "dll_name" is not in argument list.')
 
@@ -122,7 +122,7 @@ class main:
 
     st = time.time()
     file_list = list(file_map.values())
-    compiler_type = main.determineCompiler(file_list)
+    compiler_type = core.determineCompiler(file_list)
     cmd_list = []
 
     for file in file_list:
@@ -146,7 +146,7 @@ class main:
     cmd_list.insert(0, compiler_type)
     command = ' '.join(cmd_list)
     out = os.popen(command).read()
-    main.outputCompilerText(out, file_list, output_file)
+    core.outputCompilerText(out, file_list, output_file)
     et = time.time()
     print(f'\nCompilation took: {et-st} seconds\n')
     return output_file
@@ -161,7 +161,7 @@ class main:
 
     st = time.time()
     file_list = list(file_map.values())
-    compiler_type = main.determineCompiler(file_list)
+    compiler_type = core.determineCompiler(file_list)
     passed_files = []
     cmd_list = []
 
@@ -199,10 +199,10 @@ class main:
     command = ' '.join(cmd_list)
     out = os.popen(command).read()
     os.remove(object_file)  # Therefore we only return the .dll
-    main.outputCompilerText(out, file_list, output_file)
+    core.outputCompilerText(out, file_list, output_file)
     et = time.time()
     print(f'\nCompilation took: {et-st} seconds\n')
     return output_file
 
 
-main.compilationCall()
+core.compilationCall()
