@@ -4,6 +4,8 @@ import os, sys
 # TODO's
 '''
 * All functions use camelCase and variables use snake_case
+* See if dragging files on top of the program show the file
+as a virtual argument
 '''
 
 
