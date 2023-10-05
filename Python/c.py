@@ -83,27 +83,32 @@ class main:
         compiler_type = 'gcc'
     return compiler_type
 
-  def outputCompilerText(compiler_text: str, file_list: list, compile_type: str) -> None:
+  def outputCompilerText(compiler_text: str, file_list: list, compiled_file: str) -> None:
     if not isinstance(file_list, list):
       vars.error(error_type='p', var='file_list', type='list')
       return vars.exit_code
     if not isinstance(compiler_text, str):
       vars.error(error_type='p', var='compiler_text', type='string')
       return vars.exit_code
-    if not isinstance(compile_type, str):
-      vars.error(error_type='p', var='compile_type', type='string')
+    if not isinstance(compiled_file, str):
+      vars.error(error_type='p', var='compiled_file', type='string')
       return vars.exit_code
+
+    if compiled_file.endswith('.exe'):
+      compile_type = 'executable'.upper()
+    else:
+      compile_type = 'dynamic link library'.upper()
 
     if compiler_text == '':
       file_list[-1] = ''
       if len(file_list) == 2:
         files = ''.join(file_list)
-        print(f'Compiled files: {files} -> {compile_type.upper()}')
+        print(f'Compiled file: ({files} -> {compiled_file}) | {compile_type}')
       else:
         files = ', '.join(file_list)[:-2]
-        print(f'Compiled files: {files} -> {compile_type.upper()}')
+        print(f'Compiled files: ({files} -> {compiled_file}) | {compile_type}')
 
-  def compileFiles(file_map: dict) -> None:
+  def compileFiles(file_map: dict) -> str:
     if not isinstance(file_map, dict):
       vars.error(error_type='p', var='file_map', type='dict')
       return vars.exit_code
@@ -122,15 +127,17 @@ class main:
       if file.endswith('.h'):
         cmd_list.append(file)
       if file.endswith('.exe'):
+        output_file = file
         cmd_list.append(file)
 
     cmd_list.insert(-1, '-o')
     cmd_list.insert(0, compiler_type)
     command = ' '.join(cmd_list)
     out = os.popen(command).read()
-    main.outputCompilerText(out, file_list, 'exe')
+    main.outputCompilerText(out, file_list, output_file)
+    return output_file
 
-  def compileDLL(file_map: dict) -> None:
+  def compileDLL(file_map: dict) -> str:
     # https://stackoverflow.com/questions/705501/how-do-i-compile-a-cpp-source-file-into-a-dll
     # Turns a .c or .cpp file into a .dll file after turning it
     # into a object_file (described in the stack overflow question)
@@ -161,6 +168,7 @@ class main:
 
     for file in passed_files:
       if file.endswith('.dll'):
+        output_file = file
         cmd_list.insert(0, file)  # Put .dll infront
       elif file.endswith('.o'):
         object_file = file
@@ -172,7 +180,8 @@ class main:
     command = ' '.join(cmd_list)
     out = os.popen(command).read()
     os.remove(object_file)  # Therefore we only return the .dll
-    main.outputCompilerText(out, file_list, 'dll')
+    main.outputCompilerText(out, file_list, output_file)
+    return output_file
 
 
 main.compilationCall()
