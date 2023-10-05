@@ -9,10 +9,7 @@ import os, sys
 
 class vars:
 
-  def error(error_type: str,
-            var: str = None,
-            type: str = None,
-            runtime_error: str = None):
+  def error(error_type: str, var: str = None, type: str = None, runtime_error: str = None) -> None:
     if error_type == 'p':
       print(f'PARAMETER: Given variable {var} is not a {type}.')
     elif error_type == 'r':
@@ -54,9 +51,11 @@ class main:
       elif arg.endswith('.exe'):
         exe_file_counter += 1
         file_map['exe_name'] = arg
+      elif arg.endswith('.dll'):
+        exe_file_counter += 1
+        file_map['dll_name'] = arg
     if exe_file_counter == 0 or exe_file_counter > 1:
       print('No executable name given to compile to or more than 1 name given.')
-
     return file_map
 
   def determineCompiler(file_list: list) -> str:
@@ -72,22 +71,25 @@ class main:
         compiler_type = 'gcc'
     return compiler_type
 
-  def outputCompilerText(compiler_text: str, file_list: list) -> None:
+  def outputCompilerText(compiler_text: str, file_list: list, compile_type: str) -> None:
     if not isinstance(file_list, list):
       vars.error(error_type='p', var='file_list', type='list')
       return vars.exit_code
-    if not isinstance(compiler_text, list):
+    if not isinstance(compiler_text, str):
       vars.error(error_type='p', var='compiler_text', type='string')
+      return vars.exit_code
+    if not isinstance(compile_type, str):
+      vars.error(error_type='p', var='compile_type', type='string')
       return vars.exit_code
 
     if compiler_text == '':
       file_list[-1] = ''
       if len(file_list) == 2:
         files = ''.join(file_list)
-        print(f'Compiled files: {files}')
+        print(f'Compiled files: {files} -> {compile_type.upper()}')
       else:
         files = ', '.join(file_list)[:-2]
-        print(f'Compiled files: {files}')
+        print(f'Compiled files: {files} -> {compile_type.upper()}')
 
   def compileFiles(file_map: dict) -> None:
     if not isinstance(file_map, dict):
@@ -114,8 +116,60 @@ class main:
     cmd_list.insert(0, compiler_type)
     command = ' '.join(cmd_list)
     out = os.popen(command).read()
-    main.outputCompilerText(out, file_list)
+    main.outputCompilerText(out, file_list, 'exe')
+
+  def compileDLL(file_map: dict) -> None:
+    # https://stackoverflow.com/questions/705501/how-do-i-compile-a-cpp-source-file-into-a-dll
+    # Turns a .c or .cpp file into a .dll file after turning it
+    # into a object_file (described in the stack overflow question)
+    if not isinstance(file_map, dict):
+      vars.error(error_type='p', var='file_map', type='dict')
+      return vars.exit_code
+
+    file_list = list(file_map.values())
+    compiler_type = main.determineCompiler(file_list)
+    passed_files = []
+    cmd_list = []
+
+    for file in file_list:
+      if file.endswith('.cpp'):
+        passed_files.append(file.replace('.cpp', '.o'))
+        cmd_list.append(file)
+      elif file.endswith('.c'):
+        passed_files.append(file.replace('.c', '.o'))
+        cmd_list.append(file)
+      elif file.endswith('.dll'):
+        passed_files.append(file)
+
+    cmd_list.insert(-1, '-c')
+    cmd_list.insert(0, compiler_type)
+    command = ' '.join(cmd_list)
+    out = os.popen(command).read()
+    cmd_list = []
+
+    for file in passed_files:
+      if file.endswith('.dll'):
+        cmd_list.insert(0, file)  # Put .dll infront
+      elif file.endswith('.o'):
+        object_file = file
+        cmd_list.append(file)  # Add .o to any place
+
+    cmd_list.insert(0, '-shared')
+    cmd_list.insert(1, '-o')
+    cmd_list.insert(0, compiler_type)
+    command = ' '.join(cmd_list)
+    out = os.popen(command).read()
+    os.remove(object_file)  # Therefore we only return the .dll
+    main.outputCompilerText(out, file_list, 'dll')
+
+  def compilationCall() -> None:
+    arg_table = main.determineArguments()
+    if 'dll_name' in arg_table:
+      main.compileDLL(arg_table)
+    elif 'exe_name' in arg_table:
+      main.compileFiles(arg_table)
+    else:
+      print('Neither "exe_name" or "dll_name" is not in argument list.')
 
 
-main.compileFiles(main.determineArguments())
-# Make the compilationCall function instead of this ^
+main.compilationCall()
