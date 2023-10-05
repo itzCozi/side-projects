@@ -1,11 +1,16 @@
 # My compile, run and print to terminal script for C and C++
 import os, sys
+import time
+from colorama import Fore, Back, Style
 
 # TODO's
 '''
 * All functions use camelCase and variables use snake_case
 * See if dragging files on top of the program show the file
 as a virtual argument
+* See if i can allow the user to compile files into multiple binaries
+https://stackoverflow.com/questions/5950395/makefile-to-compile-multiple-c-programs
+* COMPILE TO .EXE WHEN DONE CODING
 '''
 
 
@@ -103,16 +108,19 @@ class main:
       file_list[-1] = ''
       if len(file_list) == 2:
         files = ''.join(file_list)
-        print(f'Compiled file: ({files} -> {compiled_file}) | {compile_type}')
+        print(f'\n{Fore.GREEN}!SUCCESS!{Style.RESET_ALL} Compiled file: ({files} -> {compiled_file}) | {compile_type}\n')
       else:
         files = ', '.join(file_list)[:-2]
-        print(f'Compiled files: ({files} -> {compiled_file}) | {compile_type}')
+        print(f'\n{Fore.GREEN}!SUCCESS!{Style.RESET_ALL} Compiled file: ({files} -> {compiled_file}) | {compile_type}\n')
+    else:
+      print(compiler_text)
 
   def compileFiles(file_map: dict) -> str:
     if not isinstance(file_map, dict):
       vars.error(error_type='p', var='file_map', type='dict')
       return vars.exit_code
 
+    st = time.time()
     file_list = list(file_map.values())
     compiler_type = main.determineCompiler(file_list)
     cmd_list = []
@@ -129,12 +137,18 @@ class main:
       if file.endswith('.exe'):
         output_file = file
         cmd_list.append(file)
+    for i in reversed(range(1, 4)):
+      print(f'Build operation starting in: {i}', end='\r')
+      time.sleep(1)
+    print('\x1b[2K', end='')
 
     cmd_list.insert(-1, '-o')
     cmd_list.insert(0, compiler_type)
     command = ' '.join(cmd_list)
     out = os.popen(command).read()
     main.outputCompilerText(out, file_list, output_file)
+    et = time.time()
+    print(f'\nCompilation took: {et-st} seconds\n')
     return output_file
 
   def compileDLL(file_map: dict) -> str:
@@ -145,6 +159,7 @@ class main:
       vars.error(error_type='p', var='file_map', type='dict')
       return vars.exit_code
 
+    st = time.time()
     file_list = list(file_map.values())
     compiler_type = main.determineCompiler(file_list)
     passed_files = []
@@ -159,6 +174,10 @@ class main:
         cmd_list.append(file)
       elif file.endswith('.dll'):
         passed_files.append(file)
+    for i in reversed(range(1, 4)):
+      print(f'Build operation starting in: {i}', end='\r')
+      time.sleep(1)
+    print('\x1b[2K', end='')
 
     cmd_list.insert(-1, '-c')
     cmd_list.insert(0, compiler_type)
@@ -181,6 +200,8 @@ class main:
     out = os.popen(command).read()
     os.remove(object_file)  # Therefore we only return the .dll
     main.outputCompilerText(out, file_list, output_file)
+    et = time.time()
+    print(f'\nCompilation took: {et-st} seconds\n')
     return output_file
 
 
