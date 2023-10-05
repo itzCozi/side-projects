@@ -27,6 +27,16 @@ class main:
   # Only can compile .o, .c, .cpp and .h -> .EXE (NOT .DLL)
 
   @staticmethod
+  def compilationCall() -> None:
+    arg_table = main.determineArguments()
+    if 'dll_name' in arg_table:
+      main.compileDLL(arg_table)
+    elif 'exe_name' in arg_table:
+      main.compileFiles(arg_table)
+    else:
+      print('Neither "exe_name" or "dll_name" is not in argument list.')
+
+  @staticmethod
   def determineArguments() -> dict:
     arg_list = list(sys.argv)
     source_file_counter = 0
@@ -161,15 +171,6 @@ class main:
     out = os.popen(command).read()
     os.remove(object_file)  # Therefore we only return the .dll
     main.outputCompilerText(out, file_list, 'dll')
-
-  def compilationCall() -> None:
-    arg_table = main.determineArguments()
-    if 'dll_name' in arg_table:
-      main.compileDLL(arg_table)
-    elif 'exe_name' in arg_table:
-      main.compileFiles(arg_table)
-    else:
-      print('Neither "exe_name" or "dll_name" is not in argument list.')
 
 
 main.compilationCall()
