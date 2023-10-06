@@ -16,6 +16,7 @@ from colorama import Fore, Back, Style
 * See if dragging files on top of the program show the file as a virtual argument
 * Make it possible to compile multiple source files by pairing each file with the
 exe name with the same index EX: sourceA.cpp sourceB.cpp programA.exe programB.exe
+* Round compilation time because its really verbose rn
 * COMPILE TO .EXE WHEN DONE CODING
 '''
 
@@ -111,7 +112,8 @@ class core:
         file_map['dll_name']: str = arg
 
     if exe_file_counter == 0 or exe_file_counter > 1:
-      print('No executable name given to compile to or more than 1 name given.')
+      print(
+        'No executable name given to compile to or more than 1 name given.')
       return vars.exit_code
     return file_map
 
@@ -136,6 +138,17 @@ class core:
       if file.endswith('.c'):
         compiler_type: str = 'gcc'
     return compiler_type
+
+  def compileCountdown(duration: int = 4, hide_cursor: bool = True):
+    if hide_cursor is True:
+      print('\033[?25l', end='')  # Hides cursor
+    for i in reversed(range(0, duration)):
+      print(f'Build operation starting in: {i}', end='\r')
+      time.sleep(1)
+    time.sleep(0.3)
+    if hide_cursor is True:
+      print('\033[?25h', end='')  # Shows cursor
+    print('\x1b[2K', end='')
 
   def outputCompilerText(compiler_text: str, file_list: list, compiled_file: str) -> None:
     """
@@ -218,11 +231,7 @@ class core:
       if file.endswith('.exe'):
         output_file: str = file
         cmd_list.append(file)
-
-    for i in reversed(range(1, 4)):
-      print(f'Build operation starting in: {i}', end='\r')
-      time.sleep(1)
-    print('\x1b[2K', end='')
+    core.compileCountdown()
 
     cmd_list.insert(-1, '-o')
     cmd_list.insert(0, compiler_type)
@@ -230,7 +239,7 @@ class core:
     out: str = os.popen(command).read()
     core.outputCompilerText(out, file_list, output_file)
     et: float = time.time()
-    print(f'\nCompilation took: {et - st} seconds\n')
+    print(f'\nCompilation took: {round(et - st, 3)} seconds\n')
     return output_file
 
   def compileDLL(file_map: dict) -> str:
@@ -263,10 +272,7 @@ class core:
       elif file.endswith('.dll'):
         passed_files.append(file)
 
-    for i in reversed(range(1, 4)):
-      print(f'Build operation starting in: {i}', end='\r')
-      time.sleep(1)
-    print('\x1b[2K', end='')
+    core.compileCountdown()
 
     cmd_list.insert(-1, '-c')
     cmd_list.insert(0, compiler_type)
@@ -290,7 +296,7 @@ class core:
     os.remove(object_file)  # Therefore we only return the .dll
     core.outputCompilerText(out, file_list, output_file)
     et: float = time.time()
-    print(f'\nCompilation took: {et - st} seconds\n')
+    print(f'\nCompilation took: {round(et - st, 3)} seconds\n')
     return output_file
 
 
