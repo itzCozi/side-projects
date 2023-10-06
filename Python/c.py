@@ -65,10 +65,13 @@ class core:
     source_file_counter: int = 0
     object_file_counter: int = 0
     header_file_counter: int = 0
-    exe_file_counter: int = 0
+    exe_file_counter: int = 0  # Used during multi-source file compilation
+    dll_file_counter: int = 0  # This to...
     file_map: dict = {}
 
     for arg in arg_list:
+      # Need to check if one or more source files is passed and if so also check 
+      # if the same number of output files is passed then group them by index
 
       if arg.endswith('.cpp'):
         source_file_counter += 1
@@ -104,14 +107,16 @@ class core:
 
       elif arg.endswith('.exe'):
         exe_file_counter += 1
-        file_map['exe_name']: str = arg
+        if not 'exe_name' in file_map:
+          file_map['exe_name']: str = arg
 
       elif arg.endswith('.dll'):
-        exe_file_counter += 1
-        file_map['dll_name']: str = arg
+        dll_file_counter += 1
+        if not 'dll_name' in file_map:
+          file_map['dll_name']: str = arg
 
-    if exe_file_counter == 0 or exe_file_counter > 1:
-      print('No executable name given to compile to or more than 1 name given.')
+    if exe_file_counter + dll_file_counter == 0:
+      print('No executable file name given to compile too.')
       return vars.exit_code
     return file_map
 
@@ -145,7 +150,7 @@ class core:
       if i == 3: color = Fore.GREEN
       if i == 2: color = Fore.YELLOW
       if i == 1 or i == 0: color = Fore.RED
-      print(f'Build operation starting in: {color}{i}{Style.RESET_ALL}', end='\r')
+      print(f'Build operation starting in: {color}{i}...{Style.RESET_ALL}', end='\r')
       time.sleep(1)
     if hide_cursor is True:
       print('\033[?25h', end='')  # Shows cursor
@@ -182,21 +187,21 @@ class core:
         files: str = ''.join(file_list)
         if os.path.exists(compiled_file):
           print(
-            f'\n{Fore.GREEN}!SUCCESS!{Style.RESET_ALL} Compiled file: ({files} -> {compiled_file}) | {compile_type}\n'
+            f'\n{Fore.GREEN}!SUCCESS!{Style.RESET_ALL} Compiled file: ({files} -> {compiled_file}) | {Back.WHITE+Fore.BLACK}{compile_type}{Style.RESET_ALL}\n'
           )
         else:
           print(
-            f'\n{Fore.RED}!FAILED!{Style.RESET_ALL} Attempted compile: ({files} -> {compiled_file}) | {compile_type}\n'
+            f'\n{Fore.RED}!FAILED!{Style.RESET_ALL} Attempted compile: ({files} -> {compiled_file}) | {Back.WHITE+Fore.BLACK}{compile_type}{Style.RESET_ALL}\n'
           )
       else:
         files: str = ', '.join(file_list)[:-2]
         if os.path.exists(compiled_file):
           print(
-            f'\n{Fore.GREEN}!SUCCESS!{Style.RESET_ALL} Compiled file: ({files} -> {compiled_file}) | {compile_type}\n'
+            f'\n{Fore.GREEN}!SUCCESS!{Style.RESET_ALL} Compiled file: ({files} -> {compiled_file}) | {Back.WHITE+Fore.BLACK}{compile_type}{Style.RESET_ALL}\n'
           )
         else:
           print(
-            f'\n{Fore.RED}!FAILED!{Style.RESET_ALL} Attempted compile: ({files} -> {compiled_file}) | {compile_type}\n'
+            f'\n{Fore.RED}!FAILED!{Style.RESET_ALL} Attempted compile: ({files} -> {compiled_file}) | {Back.WHITE+Fore.BLACK}{compile_type}{Style.RESET_ALL}\n'
           )
     else:
       print(compiler_text)
