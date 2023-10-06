@@ -15,7 +15,6 @@ from colorama import Fore, Back, Style
 # TODO
 '''
 * See if dragging files on top of the program show the file as a virtual argument
-* Still need to add doc-strings as soon as possible
 * Make it possible to compile multiple source files by pairing each file with the
 exe name with the same index EX: sourceA.cpp sourceB.cpp programA.exe programB.exe
 * COMPILE TO .EXE WHEN DONE CODING
@@ -43,6 +42,9 @@ class core:
 
   @staticmethod
   def compilationCall() -> None:
+    """
+    Calls correct compile option
+    """
     arg_table: dict = core.determineArguments()
     if 'dll_name' in arg_table:
       core.compileDLL(arg_table)
@@ -54,6 +56,12 @@ class core:
 
   @staticmethod
   def determineArguments() -> dict:
+    """
+    Puts all vargs into a map and return it for use
+
+    Returns:
+      dict: The map of files and keys
+    """
     arg_list: list = list(sys.argv)
     source_file_counter: int = 0
     object_file_counter: int = 0
@@ -86,6 +94,15 @@ class core:
     return file_map
 
   def determineCompiler(file_list: list) -> str:
+    """
+    Determines what compiler to use depending on source file
+
+    Args:
+      file_list (list): The list of values in the file_map
+
+    Returns:
+      str: 'gcc' for all .c files and 'g++' for .cpp files
+    """
     if not isinstance(file_list, list):
       vars.error(error_type='p', var='file_list', type='list')
       return vars.exit_code
@@ -99,6 +116,14 @@ class core:
     return compiler_type
 
   def outputCompilerText(compiler_text: str, file_list: list, compiled_file: str) -> None:
+    """
+    Prints the completion text after attempted compilation
+
+    Args:
+      compiler_text (str): The output from the popen command
+      file_list (list): The list of files used at compilation
+      compiled_file (str): The compiled file's name
+    """
     if not isinstance(file_list, list):
       vars.error(error_type='p', var='file_list', type='list')
       return vars.exit_code
@@ -126,6 +151,15 @@ class core:
       print(compiler_text)
 
   def compileFiles(file_map: dict) -> str:
+    """
+    Compiles .c, .o, .h and .cpp files into executable's
+
+    Args:
+      file_map (dict): The map of files from determineArguments()
+
+    Returns:
+      str: The compiled files path/name
+    """
     if not isinstance(file_map, dict):
       vars.error(error_type='p', var='file_map', type='dict')
       return vars.exit_code
@@ -158,13 +192,19 @@ class core:
     out: str = os.popen(command).read()
     core.outputCompilerText(out, file_list, output_file)
     et: float = time.time()
-    print(f'\nCompilation took: {et-st} seconds\n')
+    print(f'\nCompilation took: {et - st} seconds\n')
     return output_file
 
   def compileDLL(file_map: dict) -> str:
-    # https://stackoverflow.com/questions/705501/how-do-i-compile-a-cpp-source-file-into-a-dll
-    # Turns a .c or .cpp file into a .dll file after turning it
-    # into an object_file (described in the stack overflow question)
+    """
+    Turns a .c or .cpp file into a .dll file after turning it into an object file
+
+    Args:
+      file_map (dict): The map of files from determineArguments()
+
+    Returns:
+      str: The compiled files path/name
+    """
     if not isinstance(file_map, dict):
       vars.error(error_type='p', var='file_map', type='dict')
       return vars.exit_code
@@ -211,7 +251,7 @@ class core:
     os.remove(object_file)  # Therefore we only return the .dll
     core.outputCompilerText(out, file_list, output_file)
     et: float = time.time()
-    print(f'\nCompilation took: {et-st} seconds\n')
+    print(f'\nCompilation took: {et - st} seconds\n')
     return output_file
 
 
