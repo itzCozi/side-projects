@@ -13,6 +13,8 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
+* Still need to add run and print output to this code thats why compile func
+returns the path of the output.exe file
 * See if dragging files on top of the program show the file as a virtual argument
 * Make it possible to compile multiple source files by pairing each file with the
 exe name with the same index EX: sourceA.cpp sourceB.cpp programA.exe programB.exe
