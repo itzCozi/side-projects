@@ -3,7 +3,6 @@ import os, sys
 import time
 from colorama import Fore, Back, Style
 
-
 # CODE
 '''
 * All functions use camelCase and variables use snake_case
@@ -70,24 +69,47 @@ class core:
     file_map: dict = {}
 
     for arg in arg_list:
+
       if arg.endswith('.cpp'):
         source_file_counter += 1
-        file_map[f'source_file{source_file_counter}']: str = arg
+        if os.file.exists(arg):
+          file_map[f'source_file{source_file_counter}']: str = arg
+        else:
+          vars.error(error_type='r', runtime_error='A file argument cannot be found')
+          return vars.exit_code
+
       elif arg.endswith('.c'):
         source_file_counter += 1
-        file_map[f'source_file{source_file_counter}']: str = arg
+        if os.path.exists(arg):
+          file_map[f'source_file{source_file_counter}']: str = arg
+        else:
+          vars.error(error_type='r', runtime_error='A file argument cannot be found')
+          return vars.exit_code
+
       elif arg.endswith('.o'):
         object_file_counter += 1
-        file_map[f'object_file{object_file_counter}']: str = arg
+        if os.path.exists(arg):
+          file_map[f'object_file{object_file_counter}']: str = arg
+        else:
+          vars.error(error_type='r', runtime_error='A file argument cannot be found')
+          return vars.exit_code
+
       elif arg.endswith('.h'):
         header_file_counter += 1
-        file_map[f'header_file{header_file_counter}']: str = arg
+        if os.path.exists(arg):
+          file_map[f'header_file{header_file_counter}']: str = arg
+        else:
+          vars.error(error_type='r', runtime_error='A file argument cannot be found')
+          return vars.exit_code
+
       elif arg.endswith('.exe'):
         exe_file_counter += 1
         file_map['exe_name']: str = arg
+
       elif arg.endswith('.dll'):
         exe_file_counter += 1
         file_map['dll_name']: str = arg
+
     if exe_file_counter == 0 or exe_file_counter > 1:
       print('No executable name given to compile to or more than 1 name given.')
       return vars.exit_code
@@ -139,14 +161,29 @@ class core:
     else:
       compile_type: str = 'dynamic link library'.upper()
 
+    # Really ugly console output code
     if compiler_text == '':
       file_list[-1]: str = ''
       if len(file_list) == 2:
         files: str = ''.join(file_list)
-        print(f'\n{Fore.GREEN}!SUCCESS!{Style.RESET_ALL} Compiled file: ({files} -> {compiled_file}) | {compile_type}\n')
+        if os.path.exists(compiled_file):
+          print(
+            f'\n{Fore.GREEN}!SUCCESS!{Style.RESET_ALL} Compiled file: ({files} -> {compiled_file}) | {compile_type}\n'
+          )
+        else:
+          print(
+            f'\n{Fore.RED}!FAILED!{Style.RESET_ALL} Attempted compile: ({files} -> {compiled_file}) | {compile_type}\n'
+          )
       else:
         files: str = ', '.join(file_list)[:-2]
-        print(f'\n{Fore.GREEN}!SUCCESS!{Style.RESET_ALL} Compiled file: ({files} -> {compiled_file}) | {compile_type}\n')
+        if os.path.exists(compiled_file):
+          print(
+            f'\n{Fore.GREEN}!SUCCESS!{Style.RESET_ALL} Compiled file: ({files} -> {compiled_file}) | {compile_type}\n'
+          )
+        else:
+          print(
+            f'\n{Fore.RED}!FAILED!{Style.RESET_ALL} Attempted compile: ({files} -> {compiled_file}) | {compile_type}\n'
+          )
     else:
       print(compiler_text)
 
@@ -181,6 +218,7 @@ class core:
       if file.endswith('.exe'):
         output_file: str = file
         cmd_list.append(file)
+
     for i in reversed(range(1, 4)):
       print(f'Build operation starting in: {i}', end='\r')
       time.sleep(1)
@@ -224,6 +262,7 @@ class core:
         cmd_list.append(file)
       elif file.endswith('.dll'):
         passed_files.append(file)
+
     for i in reversed(range(1, 4)):
       print(f'Build operation starting in: {i}', end='\r')
       time.sleep(1)
