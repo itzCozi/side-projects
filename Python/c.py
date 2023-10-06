@@ -13,7 +13,7 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
-* Still need to add run and print output to this code thats why compile func
+* Still need to add run and print output to this code that's why compile func
 returns the path of the output.exe file
 * See if dragging files on top of the program show the file as a virtual argument
 * Make it possible to compile multiple source files by pairing each file with the
@@ -109,12 +109,12 @@ class core:
 
       elif arg.endswith('.exe'):
         exe_file_counter += 1
-        if not 'exe_name' in file_map:
+        if 'exe_name' not in file_map:
           file_map['exe_name']: str = arg
 
       elif arg.endswith('.dll'):
         dll_file_counter += 1
-        if not 'dll_name' in file_map:
+        if 'dll_name' not in file_map:
           file_map['dll_name']: str = arg
 
     if exe_file_counter + dll_file_counter == 0:
