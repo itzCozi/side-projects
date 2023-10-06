@@ -16,8 +16,6 @@ from colorama import Fore, Back, Style
 '''
 * See if dragging files on top of the program show the file as a virtual argument
 * Still need to add doc-strings as soon as possible
-* See if i can add a function to write cmake files to compile multiple source files
-https://stackoverflow.com/questions/5950395/makefile-to-compile-multiple-c-programs
 * COMPILE TO .EXE WHEN DONE CODING
 '''
 
