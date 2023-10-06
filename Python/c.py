@@ -16,7 +16,6 @@ from colorama import Fore, Back, Style
 * See if dragging files on top of the program show the file as a virtual argument
 * Make it possible to compile multiple source files by pairing each file with the
 exe name with the same index EX: sourceA.cpp sourceB.cpp programA.exe programB.exe
-* Round compilation time because its really verbose rn
 * COMPILE TO .EXE WHEN DONE CODING
 '''
 
@@ -139,13 +138,16 @@ class core:
         compiler_type: str = 'gcc'
     return compiler_type
 
-  def compileCountdown(duration: int = 4, hide_cursor: bool = True):
+  def compileCountdown(hide_cursor: bool = True):
     if hide_cursor is True:
       print('\033[?25l', end='')  # Hides cursor
-    for i in reversed(range(0, duration)):
-      print(f'Build operation starting in: {i}', end='\r')
+    print('--------------------------------------------------------------')
+    for i in reversed(range(0, 4)):
+      if i == 3: color = Fore.GREEN
+      if i == 2: color = Fore.YELLOW
+      if i == 1 or i == 0: color = Fore.RED
+      print(f'Build operation starting in: {color}{i}{Style.RESET_ALL}', end='\r')
       time.sleep(1)
-    time.sleep(0.3)
     if hide_cursor is True:
       print('\033[?25h', end='')  # Shows cursor
     print('\x1b[2K', end='')
@@ -239,7 +241,8 @@ class core:
     out: str = os.popen(command).read()
     core.outputCompilerText(out, file_list, output_file)
     et: float = time.time()
-    print(f'\nCompilation took: {round(et - st, 3)} seconds\n')
+    print(f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{round(et - st, 2)}{Style.RESET_ALL} seconds\n')
+    print('--------------------------------------------------------------')
     return output_file
 
   def compileDLL(file_map: dict) -> str:
@@ -296,7 +299,8 @@ class core:
     os.remove(object_file)  # Therefore we only return the .dll
     core.outputCompilerText(out, file_list, output_file)
     et: float = time.time()
-    print(f'\nCompilation took: {round(et - st, 3)} seconds\n')
+    print(f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{round(et - st, 2)}{Style.RESET_ALL} seconds\n')
+    print('--------------------------------------------------------------')
     return output_file
 
 
