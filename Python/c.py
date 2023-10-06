@@ -111,8 +111,7 @@ class core:
         file_map['dll_name']: str = arg
 
     if exe_file_counter == 0 or exe_file_counter > 1:
-      print(
-        'No executable name given to compile to or more than 1 name given.')
+      print('No executable name given to compile to or more than 1 name given.')
       return vars.exit_code
     return file_map
 
@@ -241,7 +240,9 @@ class core:
     out: str = os.popen(command).read()
     core.outputCompilerText(out, file_list, output_file)
     et: float = time.time()
-    print(f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{round(et - st, 2)}{Style.RESET_ALL} seconds\n')
+    print(
+      f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{round(et - st, 2)}{Style.RESET_ALL} seconds\n'
+    )
     print('--------------------------------------------------------------')
     return output_file
 
@@ -274,7 +275,6 @@ class core:
         cmd_list.append(file)
       elif file.endswith('.dll'):
         passed_files.append(file)
-
     core.compileCountdown()
 
     cmd_list.insert(-1, '-c')
@@ -299,7 +299,9 @@ class core:
     os.remove(object_file)  # Therefore we only return the .dll
     core.outputCompilerText(out, file_list, output_file)
     et: float = time.time()
-    print(f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{round(et - st, 2)}{Style.RESET_ALL} seconds\n')
+    print(
+      f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{round(et - st, 2)}{Style.RESET_ALL} seconds\n'
+    )
     print('--------------------------------------------------------------')
     return output_file
 
