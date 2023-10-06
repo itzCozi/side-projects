@@ -16,6 +16,8 @@ from colorama import Fore, Back, Style
 '''
 * See if dragging files on top of the program show the file as a virtual argument
 * Still need to add doc-strings as soon as possible
+* Make it possible to compile multiple source files by pairing each file with the
+exe name with the same index
 * COMPILE TO .EXE WHEN DONE CODING
 '''
 
