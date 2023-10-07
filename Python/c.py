@@ -122,6 +122,10 @@ class core:
       return vars.exit_code
     return file_map
 
+  def executeFileAndPrint(exe_path: str) -> None:  # Attempted to make once
+    # Executes a file and prints the os.popen read output
+    return vars.exit_code
+
   def determineCompiler(file_list: list) -> str:
     """
     Determines what compiler to use depending on source file
@@ -314,3 +318,4 @@ class core:
 
 
 core.compilationCall()
+#core.executeFileAndPrint('C:\Users\coope\OneDrive\Desktop\src/out.exe')
