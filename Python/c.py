@@ -1,10 +1,12 @@
 # My compile, run and print to terminal script for C and C++
 import os, sys
 import time
+import random
 from colorama import Fore, Back, Style
 
 # CODE
 '''
+* All references to 'exe' in comments mean executable
 * All functions use camelCase and variables use snake_case
 * All variable declarations must be type hinted EX: num: int = 0
 * If a function has parameters each variable must have specified types
@@ -31,8 +33,8 @@ class vars:
       print(f'RUNTIME: {runtime_error.capitalize()}.')
     elif error_type == 'u':
       print('UNKNOWN: An unknown error was encountered.')
-    return vars.exit_code
 
+  DEV_MODE: bool = True
   exit_code: None = None
   C_compiler: str = r'c:\MinGW\bin\gcc.exe'
   CPP_compiler: str = r'c:\MinGW\bin\g++.exe'
@@ -44,16 +46,19 @@ class core:
   @staticmethod
   def compilationCall() -> None:
     """
-    Calls correct compile option
+    Initializes the program and calls correct compile option
     """
     arg_table: dict = core.determineArguments()
     if 'dll_name' in arg_table:
-      core.compileDLL(arg_table)
-    elif 'exe_name' in arg_table:
+      core.compileDLL(arg_table)  # Single exe compile
+    elif 'exe_name' in arg_table:  # Also only one exe
       core.compileFiles(arg_table)
-    else:
-      print('Neither "exe_name" or "dll_name" is in argument list.')
-      return vars.exit_code
+    else:  # If the key has a 1 in it
+      if 'arg1' not in arg_table:
+        print('Neither "exe_name" or "dll_name" is in argument list.')
+        return vars.exit_code
+      else:
+        core.handleVArguments(arg_table)
 
   @staticmethod
   def determineArguments() -> dict:
@@ -69,15 +74,16 @@ class core:
     header_file_counter: int = 0
     exe_file_counter: int = 0  # Used during multi-source file compilation
     dll_file_counter: int = 0  # This to...
+    arg_counter: int = 0
     file_map: dict = {}
 
     for arg in arg_list:
-      # Need to check if one or more source files is passed and if so also check 
+      # Need to check if one or more source files is passed and if so also check
       # if the same number of output files is passed then group them by index
 
       if arg.endswith('.cpp'):
         source_file_counter += 1
-        if os.file.exists(arg):
+        if os.path.exists(arg):
           file_map[f'source_file{source_file_counter}']: str = arg
         else:
           vars.error(error_type='r', runtime_error='A file argument cannot be found')
@@ -117,14 +123,71 @@ class core:
         if 'dll_name' not in file_map:
           file_map['dll_name']: str = arg
 
+      elif arg[0] == '-':
+        arg_counter += 1
+        file_map[f'arg{arg_counter}']: str = arg
+
     if exe_file_counter + dll_file_counter == 0:
-      print('No executable file name given to compile too.')
-      return vars.exit_code
+      if vars.DEV_MODE is not True:
+        print('No executable file name given to compile too.')
+        return vars.exit_code
     return file_map
 
   def executeFileAndPrint(exe_path: str) -> None:  # Attempted to make once
-    # Executes a file and prints the os.popen read output
+    """
+    Executes a file and prints the os.popen read output
+
+    Args:
+      exe_path (str): The path to the executable file
+    """
     return vars.exit_code
+
+  def handleVArguments(file_map: dict) -> None:
+    """
+    Handles hyphen arguments or '-' args
+
+    Args:
+      file_map (dict): The map of arguments passed
+    """
+    if not isinstance(file_map, dict):
+      vars.error(error_type='p', var='file_map', type='dict')
+      return vars.exit_code
+
+    argument_list = [arg for key, arg in file_map.items() if 'arg' in key]
+    for arg in argument_list:
+      if arg == '-test':
+        print('Hello, World!')
+        return vars.exit_code
+
+      if arg == '-gf':  # Might not age well... (I hope it does tho)
+        color_list: list = [
+          Fore.BLUE, Fore.CYAN, Fore.GREEN, Fore.MAGENTA, Fore.RED,
+          Fore.YELLOW, Fore.WHITE
+        ]
+        ticker: int = random.randint(0, len(color_list) - 1)
+        char_count: int = -1
+        message: str = 'I Love You Dara!'
+        print('\033[?25l', end='')
+
+        for i in range(100):  # Takes about 10 seconds
+          for char in message:
+            char_count += 1
+            ticker += 1
+            if ticker == len(color_list):
+              ticker = 0
+            color = color_list[ticker]
+            if char_count == len(message):
+              char_count = 0
+              print('\x1b[2K', end='')
+            else:
+              print(f'{color}{char}{Style.RESET_ALL}', end='')
+
+          print('\r', end='')
+          char_count: int = -1
+          ticker: int = random.randint(0, len(color_list) - 1)
+          time.sleep(0.2)
+        print('\033[?25h', end='')  # Shows cursor
+        return vars.exit_code
 
   def determineCompiler(file_list: list) -> str:
     """
@@ -148,7 +211,17 @@ class core:
         compiler_type: str = 'gcc'
     return compiler_type
 
-  def compileCountdown(hide_cursor: bool = True):
+  def compileCountdown(hide_cursor: bool = True) -> None:
+    """
+    Counts down till compile process and also prints the separator
+
+    Args:
+      hide_cursor (bool): Hides cursor if is true
+    """
+    if not isinstance(hide_cursor, bool):
+      vars.error(error_type='p', var='hide_cursor', type='bool')
+      return vars.exit_code
+
     if hide_cursor is True:
       print('\033[?25l', end='')  # Hides cursor
     print('--------------------------------------------------------------')
@@ -251,8 +324,9 @@ class core:
     out: str = os.popen(command).read()
     core.outputCompilerText(out, file_list, output_file)
     et: float = time.time()
+    compile_time = round(et - st - 4, 2)
     print(
-      f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{round(et - st, 2)}{Style.RESET_ALL} seconds\n'
+      f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{compile_time}{Style.RESET_ALL} seconds\n'
     )
     print('--------------------------------------------------------------')
     return output_file
@@ -310,12 +384,12 @@ class core:
     os.remove(object_file)  # Therefore we only return the .dll
     core.outputCompilerText(out, file_list, output_file)
     et: float = time.time()
+    compile_time = round(et - st - 4, 2)
     print(
-      f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{round(et - st, 2)}{Style.RESET_ALL} seconds\n'
+      f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{compile_time}{Style.RESET_ALL} seconds\n'
     )
     print('--------------------------------------------------------------')
     return output_file
 
 
 core.compilationCall()
-#core.executeFileAndPrint('C:\Users\coope\OneDrive\Desktop\src/out.exe')
