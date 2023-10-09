@@ -18,8 +18,7 @@ from colorama import Fore, Back, Style
 * Still need to add run and print output to this code that's why compile func
 returns the path of the output.exe file
 * See if dragging files on top of the program show the file as a virtual argument
-* Make it possible to compile multiple source files by pairing each file with the
-exe name with the same index EX: sourceA.cpp sourceB.cpp programA.exe programB.exe
+* Now add dll support for multi file compiles
 * COMPILE TO .EXE WHEN DONE CODING
 '''
 
@@ -49,10 +48,10 @@ class core:
     Initializes the program and calls correct compile option
     """
     arg_table: dict = core.determineArguments()
-    if 'dll_name' in arg_table:
-      core.compileDLL(arg_table)  # Single exe compile
-    elif 'exe_name' in arg_table:
-      core.compileFiles(arg_table)  # Also only one exe
+    if 'dll_name' in arg_table and 'dll_name2' not in arg_table:
+      core.compileDLL(arg_table)  # Single output file compile
+    elif 'exe_name' in arg_table and 'exe_name2' not in arg_table:
+      core.compileFiles(arg_table)  # Also only one output
     else:
       if 'arg1' not in arg_table:
         print('Neither "exe_name" or "dll_name" is in argument list.')
@@ -78,8 +77,6 @@ class core:
     file_map: dict = {}
 
     for arg in arg_list:
-      # Need to check if one or more source files is passed and if so also check
-      # if the same number of output files is passed then group them by index
 
       if arg.endswith('.cpp'):
         source_file_counter += 1
@@ -144,6 +141,10 @@ class core:
     Args:
       exe_path (str): The path to the executable file
     """
+    if not isinstance(exe_path, str):
+      vars.error(error_type='p', var='exe_path', type='string')
+      return vars.exit_code
+
     return vars.exit_code
 
   def handleVArguments(file_map: dict) -> None:
@@ -157,7 +158,7 @@ class core:
       vars.error(error_type='p', var='file_map', type='dict')
       return vars.exit_code
 
-    argument_list = [arg for key, arg in file_map.items() if 'arg' in key]
+    argument_list: list = [arg for key, arg in file_map.items() if 'arg' in key]
     for arg in argument_list:
       if arg == '-test':
         print('Hello, World!')
@@ -178,10 +179,10 @@ class core:
             char_count += 1
             ticker += 1
             if ticker == len(color_list):
-              ticker = 0
-            color = color_list[ticker]
+              ticker: int = 0
+            color = color_list[ticker]  # This is a weird type
             if char_count == len(message):
-              char_count = 0
+              char_count: int = 0
               print('\x1b[2K', end='')
             else:
               print(f'{color}{char}{Style.RESET_ALL}', end='')
@@ -193,7 +194,7 @@ class core:
         print('\033[?25h', end='')  # Shows cursor
         return vars.exit_code
 
-      if arg == '-ms':  # Multiple source files
+      if arg == '-msf':  # Multiple source files
         core.compileMultipleExecutables(file_map)
 
   def determineCompiler(file_list: list) -> str:
@@ -300,22 +301,57 @@ class core:
       file_map (dict): The map of files from determineArguments()
 
     Returns:
-      str: The compiled files path/name
+      list: The compiled files path/name
     """
     if not isinstance(file_map, dict):
       vars.error(error_type='p', var='file_map', type='dict')
       return vars.exit_code
 
-    st: float = time.time()
     file_list: list = list(file_map.values())
-    compiler_type: str = core.determineCompiler(file_list)
     passed_exe_files: list = []  # Passed .exe or .dll files
     passed_src_files: list = []  # Passed .c or .cpp files
-    cmd_list: list = []
-    # Iterates through list of files and adds source files to a list
-    # and exe files to a list then for item in source file list find
-    # the corresponding exe file using the source file's index then
-    # compile the source file to the corresponding exe file
+    compiled_files: list = []  # List to be returned
+
+    for file in file_list:
+      if file.endswith('.cpp'):
+        passed_src_files.append(file)
+      if file.endswith('.c'):
+        passed_src_files.append(file)
+      if file.endswith('.exe'):
+        passed_exe_files.append(file)
+    core.compileCountdown()
+    ticker: int = 0
+
+    for src_file in passed_src_files:
+      st: float = time.time()
+      cmd_list: list = []
+      # Parsing makes a check for length of 2
+      source: list = [src_file, '']
+      ticker += 1
+
+      if src_file.endswith('.cpp'):
+        compiler_type: str = 'g++'
+      if src_file.endswith('.c'):
+        compiler_type: str = 'gcc'
+      file_idx: int = passed_src_files.index(src_file)
+      exe_file: str = passed_exe_files[file_idx]
+      cmd_list.append(src_file)
+      cmd_list.append(exe_file)
+
+      cmd_list.insert(-1, '-o')
+      cmd_list.insert(0, compiler_type)
+      command: str = ' '.join(cmd_list)
+      out: str = os.popen(command).read()
+      core.outputCompilerText(out, source, exe_file)
+      et: float = time.time()
+      compile_time: float = round(et - st, 2)
+      print(
+        f'\n{ticker}. {Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{compile_time}{Style.RESET_ALL} seconds\n'
+      )
+      compiled_files.append(exe_file)
+
+    print('--------------------------------------------------------------')
+    return compiled_files
 
   def compileFiles(file_map: dict) -> str:
     """
@@ -356,7 +392,7 @@ class core:
     out: str = os.popen(command).read()
     core.outputCompilerText(out, file_list, output_file)
     et: float = time.time()
-    compile_time = round(et - st - 4, 2)
+    compile_time: float = round(et - st - 4, 2)
     print(
       f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{compile_time}{Style.RESET_ALL} seconds\n'
     )
@@ -416,7 +452,7 @@ class core:
     os.remove(object_file)  # Therefore we only return the .dll
     core.outputCompilerText(out, file_list, output_file)
     et: float = time.time()
-    compile_time = round(et - st - 4, 2)
+    compile_time: float = round(et - st - 4, 2)
     print(
       f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{compile_time}{Style.RESET_ALL} seconds\n'
     )
