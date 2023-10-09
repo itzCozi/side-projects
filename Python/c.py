@@ -51,9 +51,9 @@ class core:
     arg_table: dict = core.determineArguments()
     if 'dll_name' in arg_table:
       core.compileDLL(arg_table)  # Single exe compile
-    elif 'exe_name' in arg_table:  # Also only one exe
-      core.compileFiles(arg_table)
-    else:  # If the key has a 1 in it
+    elif 'exe_name' in arg_table:
+      core.compileFiles(arg_table)  # Also only one exe
+    else:
       if 'arg1' not in arg_table:
         print('Neither "exe_name" or "dll_name" is in argument list.')
         return vars.exit_code
@@ -115,13 +115,17 @@ class core:
 
       elif arg.endswith('.exe'):
         exe_file_counter += 1
-        if 'exe_name' not in file_map:
+        if exe_file_counter == 1:
           file_map['exe_name']: str = arg
+        else:
+          file_map[f'exe_name{exe_file_counter}']: str = arg
 
       elif arg.endswith('.dll'):
         dll_file_counter += 1
-        if 'dll_name' not in file_map:
+        if dll_file_counter == 1:
           file_map['dll_name']: str = arg
+        else:
+          file_map[f'dll_name{dll_file_counter}']: str = arg
 
       elif arg[0] == '-':
         arg_counter += 1
@@ -188,6 +192,9 @@ class core:
           time.sleep(0.2)
         print('\033[?25h', end='')  # Shows cursor
         return vars.exit_code
+
+      if arg == '-ms':  # Multiple source files
+        core.compileMultipleExecutables(file_map)
 
   def determineCompiler(file_list: list) -> str:
     """
@@ -284,6 +291,31 @@ class core:
           )
     else:
       print(compiler_text)
+
+  def compileMultipleExecutables(file_map: dict) -> list:  # Can only do multi exe not dll
+    """
+    Turns a multiple .c or .cpp files into exe's and dll's
+
+    Args:
+      file_map (dict): The map of files from determineArguments()
+
+    Returns:
+      str: The compiled files path/name
+    """
+    if not isinstance(file_map, dict):
+      vars.error(error_type='p', var='file_map', type='dict')
+      return vars.exit_code
+
+    st: float = time.time()
+    file_list: list = list(file_map.values())
+    compiler_type: str = core.determineCompiler(file_list)
+    passed_exe_files: list = []  # Passed .exe or .dll files
+    passed_src_files: list = []  # Passed .c or .cpp files
+    cmd_list: list = []
+    # Iterates through list of files and adds source files to a list
+    # and exe files to a list then for item in source file list find
+    # the corresponding exe file using the source file's index then
+    # compile the source file to the corresponding exe file
 
   def compileFiles(file_map: dict) -> str:
     """
