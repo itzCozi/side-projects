@@ -48,9 +48,9 @@ class core:
     Initializes the program and calls correct compile option
     """
     arg_table: dict = core.determineArguments()
-    if 'dll_name' in arg_table and 'dll_name2' not in arg_table:
+    if 'dll_name' in arg_table and 'arg1' not in arg_table:
       core.compileDLL(arg_table)  # Single output file compile
-    elif 'exe_name' in arg_table and 'exe_name2' not in arg_table:
+    elif 'exe_name' in arg_table and 'arg1' not in arg_table:
       core.compileFiles(arg_table)  # Also only one output
     else:
       if 'arg1' not in arg_table:
@@ -145,6 +145,14 @@ class core:
       vars.error(error_type='p', var='exe_path', type='string')
       return vars.exit_code
 
+    exe_path = exe_path.replace('\\', '/')
+    file_list = exe_path.split('/')
+    exe_name = file_list[-1]
+    exe_path = '/'.join(file_list[:-1])
+    cd_command = f'cd {exe_path}'
+    execute_command = f'./{exe_name}'
+    os.system(cd_command)
+    file_output = os.popen(execute_command).read()
     return vars.exit_code
 
   def handleVArguments(file_map: dict) -> None:
@@ -196,6 +204,14 @@ class core:
 
       if arg == '-msf':  # Multiple source files
         core.compileMultipleExecutables(file_map)
+
+      if arg == '-out':  # Runs compiled file
+        if 'dll_name' in file_map and 'dll_name2' not in file_map:
+          exe_file = core.compileDLL(file_map)
+        elif 'exe_name' in file_map and 'exe_name2' not in file_map:
+          exe_file = core.compileFiles(file_map)
+        core.executeFileAndPrint(exe_file)
+        
 
   def determineCompiler(file_list: list) -> str:
     """
