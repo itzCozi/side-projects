@@ -171,8 +171,13 @@ class core:
     exe_name: str = file_list[-1]
     exe_path: str = '/'.join(file_list[:-1])
     cd_command: str = f'cd {exe_path}'
-    execute_command: str = f'./{exe_name}'
-    command = f'{cd_command};{execute_command}'
+    # If in working dir then dont add working dir path 
+    # if not add it to the begging of the string
+    if len(file_list) > 1:
+      command: str = f'{cd_command};{exe_name}'
+    else:
+      command: str = exe_name
+    command: str = command.replace('ps', 'powershell')
     file_output: str = os.popen(command).read()
     print(file_output)
 
