@@ -170,7 +170,9 @@ class core:
       vars.error(error_type='p', var='file_map', type='dict')
       return vars.exit_code
 
-    argument_list: list = [arg for key, arg in file_map.items() if 'arg' in key]
+    argument_list: list = [
+      arg for key, arg in file_map.items() if 'arg' in key
+    ]
     for arg in argument_list:
       if arg == '-test':
         print('Hello, World!')
@@ -215,7 +217,7 @@ class core:
         elif 'exe_name' in file_map and 'exe_name2' not in file_map:
           exe_file = core.compileFiles(file_map)
         core.executeFileAndPrint(exe_file)  # Has an issue with Compiled file: (-out, bar.c ...)
-        
+
   def determineCompiler(file_list: list) -> str:
     """
     Determines what compiler to use depending on source file
@@ -338,6 +340,8 @@ class core:
         passed_src_files.append(file)
       if file.endswith('.exe'):
         passed_exe_files.append(file)
+      if file in vars.varg_list:
+        print(file)  #file_list.remove(file)
     core.compileCountdown()
     ticker: int = 0
 
@@ -403,6 +407,8 @@ class core:
       if file.endswith('.exe'):
         output_file: str = file
         cmd_list.append(file)
+      if file in vars.varg_list:
+        print(file)  #file_list.remove(file)
     core.compileCountdown()
 
     cmd_list.insert(-1, '-o')
@@ -447,6 +453,8 @@ class core:
         cmd_list.append(file)
       elif file.endswith('.dll'):
         passed_files.append(file)
+      elif file in vars.varg_list:
+        print(file)  #file_list.remove(file)
     core.compileCountdown()
 
     cmd_list.insert(-1, '-c')
