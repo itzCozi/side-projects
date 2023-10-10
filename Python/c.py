@@ -172,9 +172,8 @@ class core:
     exe_path: str = '/'.join(file_list[:-1])
     cd_command: str = f'cd {exe_path}'
     execute_command: str = f'./{exe_name}'
-    # TODO: Sometimes has an issue with calling to the file using './'
-    os.system(cd_command)
-    file_output: str = os.popen(execute_command).read()
+    command = f'{cd_command};{execute_command}'
+    file_output: str = os.popen(command).read()
     print(file_output)
 
   def handleVArguments(file_map: dict) -> None:
