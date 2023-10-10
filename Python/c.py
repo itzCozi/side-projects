@@ -174,7 +174,13 @@ class core:
     # If in working dir then dont add working dir path 
     # if not add it to the begging of the string
     if len(file_list) > 1:
-      command: str = f'{cd_command};{exe_name}'
+      if os.getcwd() in exe_path:
+        command: str = f'{cd_command};{exe_name}'
+      else:
+        cur_dir: str = os.getcwd().replace('\\', '/')
+        exe_path: str = cur_dir + exe_path
+        cd_command: str = f'cd {exe_path}'
+        command: str = f'{cd_command};{exe_name}'
     else:
       command: str = exe_name
     command: str = command.replace('ps', 'powershell')
