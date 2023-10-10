@@ -171,20 +171,22 @@ class core:
     exe_name: str = file_list[-1]
     exe_path: str = '/'.join(file_list[:-1])
     cd_command: str = f'cd {exe_path}'
-    # If in working dir then dont add working dir path 
-    # if not add it to the begging of the string
+    cur_dir: str = os.getcwd().replace('\\', '/')
     if len(file_list) > 1:
-      if os.getcwd() in exe_path:
-        command: str = f'{cd_command};{exe_name}'
+      # If true we use powershell, so we can cd to the directory
+      # and run the file in one command using a semi-colan (;)
+      if cur_dir in exe_path:
+        command: str = f'ps {cd_command};./{exe_name}'
       else:
-        cur_dir: str = os.getcwd().replace('\\', '/')
-        exe_path: str = cur_dir + exe_path
+        exe_path: str = f'{cur_dir}/{exe_path}'
         cd_command: str = f'cd {exe_path}'
-        command: str = f'{cd_command};{exe_name}'
+        command: str = f'ps {cd_command};./{exe_name}'
     else:
       command: str = exe_name
     command: str = command.replace('ps', 'powershell')
     file_output: str = os.popen(command).read()
+    # TODO: Need to add a decorator so it looks pretty like
+    # the compile process with colors and stuff!
     print(file_output)
 
   def handleVArguments(file_map: dict) -> None:
