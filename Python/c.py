@@ -37,6 +37,9 @@ class vars:
   exit_code: None = None
   C_compiler: str = r'c:\MinGW\bin\gcc.exe'
   CPP_compiler: str = r'c:\MinGW\bin\g++.exe'
+  # TODO: If file in file_list in this list then remove it
+  # from the file_list add new args as they are made
+  varg_list: list = ['-gf', '-test', '-msf', '-out']
 
 
 class core:
@@ -151,9 +154,10 @@ class core:
     exe_path = '/'.join(file_list[:-1])
     cd_command = f'cd {exe_path}'
     execute_command = f'./{exe_name}'
+    # TODO: Has an issue with calling to the file using './'
     os.system(cd_command)
     file_output = os.popen(execute_command).read()
-    return vars.exit_code
+    print(file_output)
 
   def handleVArguments(file_map: dict) -> None:
     """
@@ -210,9 +214,8 @@ class core:
           exe_file = core.compileDLL(file_map)
         elif 'exe_name' in file_map and 'exe_name2' not in file_map:
           exe_file = core.compileFiles(file_map)
-        core.executeFileAndPrint(exe_file)
+        core.executeFileAndPrint(exe_file)  # Has an issue with Compiled file: (-out, bar.c ...)
         
-
   def determineCompiler(file_list: list) -> str:
     """
     Determines what compiler to use depending on source file
