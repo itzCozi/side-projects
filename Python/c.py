@@ -182,7 +182,10 @@ class core:
         cd_command: str = f'cd {exe_path}'
         command: str = f'ps {cd_command};./{exe_name}'
     else:
-      command: str = exe_name
+      if 'linux' in sys.platform:
+        command: str = f'./{exe_name}'
+      else:
+        command: str = exe_name
     command: str = command.replace('ps', 'powershell')
     file_output: str = os.popen(command).read()
     # TODO: Need to add a decorator so it looks pretty like
