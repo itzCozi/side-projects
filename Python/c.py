@@ -1,4 +1,5 @@
 # My compile, run and print to terminal script for C and C++
+
 import os, sys
 import time
 import random
@@ -37,8 +38,6 @@ class vars:
   exit_code: None = None
   C_compiler: str = r'c:\MinGW\bin\gcc.exe'
   CPP_compiler: str = r'c:\MinGW\bin\g++.exe'
-  # TODO: If file in file_list in this list then remove it
-  # from the file_list add new args as they are made
   varg_list: list = ['-gf', '-test', '-msf', '-out']
 
 
@@ -137,6 +136,25 @@ class core:
         return vars.exit_code
     return file_map
 
+  def filterFileList(file_list: list) -> list:
+    """
+    Removes arguments from file_list then returns new list
+
+    Args:
+      file_list (list): The list of values from args
+
+    Returns:
+      list: The filtered list of file_list
+    """
+    if not isinstance(file_list, list):
+      vars.error(error_type='p', var='file_list', type='list')
+      return vars.exit_code
+
+    for file in file_list:
+      if file in vars.varg_list:
+        file_list.remove(file)
+    return file_list
+
   def executeFileAndPrint(exe_path: str) -> None:  # Attempted to make once
     """
     Executes a file and prints the os.popen read output
@@ -148,15 +166,15 @@ class core:
       vars.error(error_type='p', var='exe_path', type='string')
       return vars.exit_code
 
-    exe_path = exe_path.replace('\\', '/')
-    file_list = exe_path.split('/')
-    exe_name = file_list[-1]
-    exe_path = '/'.join(file_list[:-1])
-    cd_command = f'cd {exe_path}'
-    execute_command = f'./{exe_name}'
-    # TODO: Has an issue with calling to the file using './'
+    exe_path: str = exe_path.replace('\\', '/')
+    file_list: list = exe_path.split('/')
+    exe_name: str = file_list[-1]
+    exe_path: str = '/'.join(file_list[:-1])
+    cd_command: str = f'cd {exe_path}'
+    execute_command: str = f'./{exe_name}'
+    # TODO: Sometimes has an issue with calling to the file using './'
     os.system(cd_command)
-    file_output = os.popen(execute_command).read()
+    file_output: str = os.popen(execute_command).read()
     print(file_output)
 
   def handleVArguments(file_map: dict) -> None:
@@ -213,9 +231,9 @@ class core:
 
       if arg == '-out':  # Runs compiled file
         if 'dll_name' in file_map and 'dll_name2' not in file_map:
-          exe_file = core.compileDLL(file_map)
+          exe_file: str = core.compileDLL(file_map)
         elif 'exe_name' in file_map and 'exe_name2' not in file_map:
-          exe_file = core.compileFiles(file_map)
+          exe_file: str = core.compileFiles(file_map)
         core.executeFileAndPrint(exe_file)  # Has an issue with Compiled file: (-out, bar.c ...)
 
   def determineCompiler(file_list: list) -> str:
@@ -340,8 +358,6 @@ class core:
         passed_src_files.append(file)
       if file.endswith('.exe'):
         passed_exe_files.append(file)
-      if file in vars.varg_list:
-        print(file)  #file_list.remove(file)
     core.compileCountdown()
     ticker: int = 0
 
@@ -407,14 +423,13 @@ class core:
       if file.endswith('.exe'):
         output_file: str = file
         cmd_list.append(file)
-      if file in vars.varg_list:
-        print(file)  #file_list.remove(file)
     core.compileCountdown()
 
     cmd_list.insert(-1, '-o')
     cmd_list.insert(0, compiler_type)
     command: str = ' '.join(cmd_list)
     out: str = os.popen(command).read()
+    file_list: list = core.filterFileList(file_list)
     core.outputCompilerText(out, file_list, output_file)
     et: float = time.time()
     compile_time: float = round(et - st - 4, 2)
@@ -453,8 +468,6 @@ class core:
         cmd_list.append(file)
       elif file.endswith('.dll'):
         passed_files.append(file)
-      elif file in vars.varg_list:
-        print(file)  #file_list.remove(file)
     core.compileCountdown()
 
     cmd_list.insert(-1, '-c')
@@ -477,6 +490,7 @@ class core:
     command: str = ' '.join(cmd_list)
     out: str = os.popen(command).read()
     os.remove(object_file)  # Therefore we only return the .dll
+    file_list: list = core.filterFileList(file_list)
     core.outputCompilerText(out, file_list, output_file)
     et: float = time.time()
     compile_time: float = round(et - st - 4, 2)
