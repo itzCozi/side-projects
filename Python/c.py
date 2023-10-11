@@ -35,7 +35,7 @@ class vars:
       print('UNKNOWN: An unknown error was encountered.')
 
   DEV_MODE: bool = True
-  exit_code: None = None
+  exit_code: None = None  # Returned after an error
   C_compiler: str = r'c:\MinGW\bin\gcc.exe'
   CPP_compiler: str = r'c:\MinGW\bin\g++.exe'
   varg_list: list = ['-gf', '-test', '-msf', '-out']
@@ -136,7 +136,7 @@ class core:
         return vars.exit_code
     return file_map
 
-  def filterFileList(file_list: list) -> list:
+  def filterFileList(file_list: list) -> list:  # This small function is to filter stupid args
     """
     Removes arguments from file_list then returns new list
 
@@ -245,11 +245,12 @@ class core:
         core.compileMultipleExecutables(file_map)
 
       if arg == '-out':  # Runs compiled file
+        # Only works with single file output no multi exe's or dll's
         if 'dll_name' in file_map and 'dll_name2' not in file_map:
           exe_file: str = core.compileDLL(file_map)
         elif 'exe_name' in file_map and 'exe_name2' not in file_map:
           exe_file: str = core.compileFiles(file_map)
-        core.executeFileAndPrint(exe_file)  # Has an issue with Compiled file: (-out, bar.c ...)
+        core.executeFileAndPrint(exe_file)
 
   def determineCompiler(file_list: list) -> str:
     """
@@ -287,7 +288,7 @@ class core:
     if hide_cursor is True:
       print('\033[?25l', end='')  # Hides cursor
     print('--------------------------------------------------------------')
-    for i in reversed(range(0, 4)):
+    for i in reversed(range(1, 4)):
       if i == 3: color = Fore.GREEN
       if i == 2: color = Fore.YELLOW
       if i == 1 or i == 0: color = Fore.RED
@@ -369,11 +370,12 @@ class core:
     for file in file_list:
       if file.endswith('.cpp'):
         passed_src_files.append(file)
-      if file.endswith('.c'):
+      elif file.endswith('.c'):
         passed_src_files.append(file)
-      if file.endswith('.exe'):
+      elif file.endswith('.exe'):
         passed_exe_files.append(file)
     core.compileCountdown()
+    total_compile_time: int = 0
     ticker: int = 0
 
     for src_file in passed_src_files:
@@ -395,15 +397,28 @@ class core:
       cmd_list.insert(-1, '-o')
       cmd_list.insert(0, compiler_type)
       command: str = ' '.join(cmd_list)
-      out: str = os.popen(command).read()
-      core.outputCompilerText(out, source, exe_file)
+      compiler_return: str = os.popen(command).read()
+      core.outputCompilerText(compiler_return, source, exe_file)
       et: float = time.time()
       compile_time: float = round(et - st, 2)
+      total_compile_time += compile_time
       print(
         f'\n{ticker}. {Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{compile_time}{Style.RESET_ALL} seconds\n'
       )
       compiled_files.append(exe_file)
 
+    if total_compile_time < 1.5:
+      print(
+        f'\n({ticker}) file compilation took: {Fore.GREEN}{total_compile_time}{Style.RESET_ALL} seconds'
+      )
+    elif total_compile_time < 3:
+      print(
+        f'\n({ticker}) file compilation took: {Fore.YELLOW}{total_compile_time}{Style.RESET_ALL} seconds'
+      )
+    elif total_compile_time > 4:
+      print(
+        f'\n({ticker}) file compilation took: {Fore.RED}{total_compile_time}{Style.RESET_ALL} seconds'
+      )
     print('--------------------------------------------------------------')
     return compiled_files
 
@@ -429,13 +444,13 @@ class core:
     for file in file_list:
       if file.endswith('.cpp'):
         cmd_list.append(file)
-      if file.endswith('.c'):
+      elif file.endswith('.c'):
         cmd_list.append(file)
-      if file.endswith('.o'):
+      elif file.endswith('.o'):
         cmd_list.append(file)
-      if file.endswith('.h'):
+      elif file.endswith('.h'):
         cmd_list.append(file)
-      if file.endswith('.exe'):
+      elif file.endswith('.exe'):
         output_file: str = file
         cmd_list.append(file)
     core.compileCountdown()
@@ -443,9 +458,9 @@ class core:
     cmd_list.insert(-1, '-o')
     cmd_list.insert(0, compiler_type)
     command: str = ' '.join(cmd_list)
-    out: str = os.popen(command).read()
+    compiler_return: str = os.popen(command).read()
     file_list: list = core.filterFileList(file_list)
-    core.outputCompilerText(out, file_list, output_file)
+    core.outputCompilerText(compiler_return, file_list, output_file)
     et: float = time.time()
     compile_time: float = round(et - st - 4, 2)
     print(
@@ -488,7 +503,7 @@ class core:
     cmd_list.insert(-1, '-c')
     cmd_list.insert(0, compiler_type)
     command: str = ' '.join(cmd_list)
-    os.popen(command).read()  # No need to make 'out' var here
+    os.popen(command).read()  # No need to make 'compiler_return' var here
     cmd_list: list = []
 
     for file in passed_files:
@@ -503,10 +518,10 @@ class core:
     cmd_list.insert(1, '-o')
     cmd_list.insert(0, compiler_type)
     command: str = ' '.join(cmd_list)
-    out: str = os.popen(command).read()
+    compiler_return: str = os.popen(command).read()
     os.remove(object_file)  # Therefore we only return the .dll
     file_list: list = core.filterFileList(file_list)
-    core.outputCompilerText(out, file_list, output_file)
+    core.outputCompilerText(compiler_return, file_list, output_file)
     et: float = time.time()
     compile_time: float = round(et - st - 4, 2)
     print(
