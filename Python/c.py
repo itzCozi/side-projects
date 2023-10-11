@@ -194,9 +194,9 @@ class core:
     command: str = command.replace('ps', 'powershell')
     file_output: str = os.popen(command).read()
     # TODO: Need to add a decorator so it looks pretty like
-    # the compile process with colors and stuff! 
+    # the compile process with colors and stuff!
     print(
-      f'\n{Back.CYAN+Fore.BLACK} ----- {exe_name} ----- {Style.RESET_ALL}\n{file_output}\n'
+      f'\n{Back.CYAN+Fore.WHITE} ----- {Back.RED} {exe_name} {Style.RESET_ALL+Back.CYAN} ----- {Style.RESET_ALL}\n{file_output}\n'
     )
 
   def handleVArguments(file_map: dict) -> None:
