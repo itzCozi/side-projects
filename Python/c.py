@@ -16,8 +16,7 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
-* Still need to add run and print output to this code that's why compile func
-returns the path of the output.exe file
+* Make the decorator for executeFileAndPrint() function and make it look pretty
 * See if dragging files on top of the program show the file as a virtual argument
 * Now add dll support for multi file compiles
 * COMPILE TO .EXE WHEN DONE CODING
