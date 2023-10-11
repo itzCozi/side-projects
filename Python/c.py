@@ -18,7 +18,6 @@ from colorama import Fore, Back, Style
 '''
 * Make the decorator for executeFileAndPrint() function and make it look pretty
 * See if dragging files on top of the program show the file as a virtual argument
-* Now add dll support for multi file compiles
 * COMPILE TO .EXE WHEN DONE CODING
 '''
 
@@ -171,25 +170,34 @@ class core:
     exe_path: str = '/'.join(file_list[:-1])
     cd_command: str = f'cd {exe_path}'
     cur_dir: str = os.getcwd().replace('\\', '/')
+    platform: str = sys.platform
     if len(file_list) > 1:
       # If true we use powershell, so we can cd to the directory
       # and run the file in one command using a semi-colan (;)
       if cur_dir in exe_path:
-        command: str = f'ps {cd_command};./{exe_name}'
+        if 'linux' in platform:
+          command: str = f'{cd_command};./{exe_name}'
+        else:
+          command: str = f'ps {cd_command};./{exe_name}'
       else:
         exe_path: str = f'{cur_dir}/{exe_path}'
         cd_command: str = f'cd {exe_path}'
-        command: str = f'ps {cd_command};./{exe_name}'
+        if 'linux' in platform:
+          command: str = f'{cd_command};./{exe_name}'
+        else:
+          command: str = f'ps {cd_command};./{exe_name}'
     else:
-      if 'linux' in sys.platform:
+      if 'linux' in platform:
         command: str = f'./{exe_name}'
       else:
         command: str = exe_name
     command: str = command.replace('ps', 'powershell')
     file_output: str = os.popen(command).read()
     # TODO: Need to add a decorator so it looks pretty like
-    # the compile process with colors and stuff!
-    print(file_output)
+    # the compile process with colors and stuff! 
+    print(
+      f'\n{Back.CYAN+Fore.BLACK} ----- {exe_name} ----- {Style.RESET_ALL}\n{file_output}\n'
+    )
 
   def handleVArguments(file_map: dict) -> None:
     """
@@ -347,7 +355,7 @@ class core:
     else:
       print(compiler_text)
 
-  def compileMultipleExecutables(file_map: dict) -> list:  # Can only do multi exe not dll
+  def compileMultipleExecutables(file_map: dict) -> list:
     """
     Turns a multiple .c or .cpp files into exe's and dll's
 
@@ -373,6 +381,9 @@ class core:
         passed_src_files.append(file)
       elif file.endswith('.exe'):
         passed_exe_files.append(file)
+      elif file.endswith('.dll'):
+        passed_exe_files.append(file)
+
     core.compileCountdown()
     total_compile_time: int = 0
     ticker: int = 0
@@ -406,17 +417,18 @@ class core:
       )
       compiled_files.append(exe_file)
 
+    comp_time = round(total_compile_time, 2)
     if total_compile_time < 1.5:
       print(
-        f'\n({ticker}) file compilation took: {Fore.GREEN}{total_compile_time}{Style.RESET_ALL} seconds'
+        f'\n({ticker}) file compilation took: {Fore.GREEN}{comp_time}{Style.RESET_ALL} seconds'
       )
     elif total_compile_time < 3:
       print(
-        f'\n({ticker}) file compilation took: {Fore.YELLOW}{total_compile_time}{Style.RESET_ALL} seconds'
+        f'\n({ticker}) file compilation took: {Fore.YELLOW}{comp_time}{Style.RESET_ALL} seconds'
       )
     elif total_compile_time > 4:
       print(
-        f'\n({ticker}) file compilation took: {Fore.RED}{total_compile_time}{Style.RESET_ALL} seconds'
+        f'\n({ticker}) file compilation took: {Fore.RED}{comp_time}{Style.RESET_ALL} seconds'
       )
     print('--------------------------------------------------------------')
     return compiled_files
@@ -522,7 +534,7 @@ class core:
     file_list: list = core.filterFileList(file_list)
     core.outputCompilerText(compiler_return, file_list, output_file)
     et: float = time.time()
-    compile_time: float = round(et - st 3, 2)
+    compile_time: float = round(et - st - 3, 2)
     print(
       f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{compile_time}{Style.RESET_ALL} seconds\n'
     )
