@@ -193,11 +193,16 @@ class core:
         command: str = exe_name
     command: str = command.replace('ps', 'powershell')
     file_output: str = os.popen(command).read()
-    # TODO: Need to add a decorator so it looks pretty like
-    # the compile process with colors and stuff!
     print(
-      f'\n{Back.CYAN+Fore.WHITE} ----- {Back.RED} {exe_name} {Style.RESET_ALL+Back.CYAN} ----- {Style.RESET_ALL}\n{file_output}\n'
+      f'\n{Back.CYAN+Fore.WHITE} ----- {Back.RED} {exe_name} {Style.RESET_ALL+Back.CYAN} ----- {Style.RESET_ALL}'
     )
+    if file_output == '':
+      print(f'{Fore.RED}No output received from given executable.\n{Style.RESET_ALL}')
+    else:
+      print(file_output)
+    line_list: list = []
+    for i in range(len(exe_name)+14): line_list.append('-')
+    print(f'{Back.CYAN+Fore.WHITE} {"".join(line_list)} {Style.RESET_ALL}\n')
 
   def handleVArguments(file_map: dict) -> None:
     """
@@ -294,7 +299,7 @@ class core:
 
     if hide_cursor is True:
       print('\033[?25l', end='')  # Hides cursor
-    print('--------------------------------------------------------------')
+    print('-----------------------------------------------------------------')
     for i in reversed(range(1, 4)):
       if i == 3: color = Fore.GREEN
       if i == 2: color = Fore.YELLOW
@@ -430,7 +435,7 @@ class core:
       print(
         f'\n({ticker}) file compilation took: {Fore.RED}{comp_time}{Style.RESET_ALL} seconds'
       )
-    print('--------------------------------------------------------------')
+    print('-----------------------------------------------------------------')
     return compiled_files
 
   def compileFiles(file_map: dict) -> str:
@@ -477,7 +482,7 @@ class core:
     print(
       f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{compile_time}{Style.RESET_ALL} seconds\n'
     )
-    print('--------------------------------------------------------------')
+    print('-----------------------------------------------------------------')
     return output_file
 
   def compileDLL(file_map: dict) -> str:
@@ -538,7 +543,7 @@ class core:
     print(
       f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{compile_time}{Style.RESET_ALL} seconds\n'
     )
-    print('--------------------------------------------------------------')
+    print('-----------------------------------------------------------------')
     return output_file
 
 
