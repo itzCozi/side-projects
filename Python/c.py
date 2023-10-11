@@ -461,7 +461,7 @@ class core:
     file_list: list = core.filterFileList(file_list)
     core.outputCompilerText(compiler_return, file_list, output_file)
     et: float = time.time()
-    compile_time: float = round(et - st - 4, 2)
+    compile_time: float = round(et - st - 3, 2)
     print(
       f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{compile_time}{Style.RESET_ALL} seconds\n'
     )
@@ -522,7 +522,7 @@ class core:
     file_list: list = core.filterFileList(file_list)
     core.outputCompilerText(compiler_return, file_list, output_file)
     et: float = time.time()
-    compile_time: float = round(et - st - 4, 2)
+    compile_time: float = round(et - st 3, 2)
     print(
       f'\n{Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{compile_time}{Style.RESET_ALL} seconds\n'
     )
