@@ -16,8 +16,8 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
-* Make the decorator for executeFileAndPrint() function and make it look pretty
-* See if dragging files on top of the program show the file as a virtual argument
+* Make it possible to compile multi source files and 
+print the output of both files... (func: handleVArguments)
 * COMPILE TO .EXE WHEN DONE CODING
 '''
 
