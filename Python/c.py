@@ -10,6 +10,7 @@ from colorama import Fore, Back, Style
 * All references to 'exe' in comments mean executable
 * All functions use camelCase and variables use snake_case
 * All variable declarations must be type hinted EX: num: int = 0
+* Most test files are .c because it compiles a couple seconds faster
 * If a function has parameters each variable must have specified types
 * Functions without any parameters in a class must have the @staticmethod tag
 '''
@@ -18,6 +19,10 @@ from colorama import Fore, Back, Style
 '''
 * Make it possible to compile multi source files and 
 print the output of both files... (func: handleVArguments)
+* Add a leave_obj_file arg that doesnt delete the .o file
+in compileDLL()
+* Maybe make the color coded compile time output a function
+I think it would be cool to have in all compile functions
 * COMPILE TO .EXE WHEN DONE CODING
 '''
 
@@ -201,7 +206,7 @@ class core:
     else:
       print(file_output)
     line_list: list = []
-    for i in range(len(exe_name)+14): line_list.append('-')
+    for i in range(len(exe_name) + 14): line_list.append('-')
     print(f'{Back.CYAN+Fore.WHITE} {"".join(line_list)} {Style.RESET_ALL}\n')
 
   def handleVArguments(file_map: dict) -> None:
@@ -486,6 +491,8 @@ class core:
     return output_file
 
   def compileDLL(file_map: dict) -> str:
+    # I know this is a long function for only making like 3 sys calls with but this is
+    # the legacy way of make .dll files (https://www.cygwin.com/cygwin-ug-net/dll.html)
     """
     Turns a .c or .cpp file into a .dll file after turning it into an object file
 
@@ -503,30 +510,41 @@ class core:
     file_list: list = list(file_map.values())
     compiler_type: str = core.determineCompiler(file_list)
     passed_files: list = []
+    holding_list: list = []
     cmd_list: list = []
 
     for file in file_list:
       if file.endswith('.cpp'):
         passed_files.append(file.replace('.cpp', '.o'))
-        cmd_list.append(file)
+        holding_list.append(file)
       elif file.endswith('.c'):
         passed_files.append(file.replace('.c', '.o'))
-        cmd_list.append(file)
+        holding_list.append(file)
       elif file.endswith('.dll'):
         passed_files.append(file)
+
+    for file in holding_list:
+      if file.endswith('.cpp'):
+        passed_files.append(file.replace('.cpp', '.o'))
+        cmd_list.append(file.split('/')[-1])
+      elif file.endswith('.c'):
+        passed_files.append(file.replace('.c', '.o'))
+        cmd_list.append(file.split('/')[-1])
     core.compileCountdown()
 
     cmd_list.insert(-1, '-c')
     cmd_list.insert(0, compiler_type)
+    cd_command = f'cd {"/".join(holding_list[-1].split("/")[:-1])}'
+    cmd_list.insert(0, f'{cd_command} ;')
     command: str = ' '.join(cmd_list)
     os.popen(command).read()  # No need to make 'compiler_return' var here
     cmd_list: list = []
 
     for file in passed_files:
-      if file.endswith('.dll'):
+      if file.endswith('.dll') and file not in cmd_list:
         output_file: str = file
         cmd_list.insert(0, file)  # Put .dll in front
-      elif file.endswith('.o'):
+      elif file.endswith('.o') and file not in cmd_list:
         object_file: str = file
         cmd_list.append(file)  # Add .o to any place
 
