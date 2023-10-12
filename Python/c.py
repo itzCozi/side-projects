@@ -13,16 +13,18 @@ from colorama import Fore, Back, Style
 * Most test files are .c because it compiles a couple seconds faster
 * If a function has parameters each variable must have specified types
 * Functions without any parameters in a class must have the @staticmethod tag
+* If a variable or function uses more than one type use EX: num: int | float = 0.1
 '''
 
 # TODO
 '''
+* Make all error messages red using colorama
+* Use the same method as -out to vary the lenght of
+the line depending on the lenght of the input args
 * Make it possible to compile multi source files and 
 print the output of both files... (func: handleVArguments)
 * Add a leave_obj_file arg that doesnt delete the .o file
 in compileDLL()
-* Maybe make the color coded compile time output a function
-I think it would be cool to have in all compile functions
 * COMPILE TO .EXE WHEN DONE CODING
 '''
 
@@ -206,7 +208,8 @@ class core:
     else:
       print(file_output)
     line_list: list = []
-    for i in range(len(exe_name) + 14): line_list.append('-')
+    for i in range(len(exe_name) + 14):
+      line_list.append('-')
     print(f'{Back.CYAN+Fore.WHITE} {"".join(line_list)} {Style.RESET_ALL}\n')
 
   def handleVArguments(file_map: dict) -> None:
@@ -314,6 +317,34 @@ class core:
     if hide_cursor is True:
       print('\033[?25h', end='')  # Shows cursor
     print('\x1b[2K', end='')
+
+  def outputCompileTime(total_compile_time: float | int, ticker: int) -> None:
+    """
+    Changes the color of the compile time if its a certain number
+
+    Args:
+      total_compile_time (int): The total time compilation took
+    """
+    if not isinstance(total_compile_time, float | int):
+      vars.error(error_type='p', var='total_compile_time', type='float')
+      return vars.exit_code
+    if not isinstance(ticker, int):
+      vars.error(error_type='p', var='ticker', type='integer')
+      return vars.exit_code
+
+    comp_time: float = round(total_compile_time, 2)
+    if total_compile_time < 1.5:
+      print(
+        f'\n({ticker}) file compilation took: {Fore.GREEN}{comp_time}{Style.RESET_ALL} seconds\n'
+      )
+    elif total_compile_time < 3:
+      print(
+        f'\n({ticker}) file compilation took: {Fore.YELLOW}{comp_time}{Style.RESET_ALL} seconds\n'
+      )
+    elif total_compile_time > 4:
+      print(
+        f'\n({ticker}) file compilation took: {Fore.RED}{comp_time}{Style.RESET_ALL} seconds\n'
+      )
 
   def outputCompilerText(compiler_text: str, file_list: list, compiled_file: str) -> None:
     """
@@ -423,23 +454,11 @@ class core:
       compile_time: float = round(et - st, 2)
       total_compile_time += compile_time
       print(
-        f'\n{ticker}. {Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{compile_time}{Style.RESET_ALL} seconds\n'
+        f'{ticker}. {Back.MAGENTA}{compiler_type.upper()}{Style.RESET_ALL} compilation took: {Fore.BLUE}{compile_time}{Style.RESET_ALL} seconds\n'
       )
       compiled_files.append(exe_file)
 
-    comp_time = round(total_compile_time, 2)
-    if total_compile_time < 1.5:
-      print(
-        f'\n({ticker}) file compilation took: {Fore.GREEN}{comp_time}{Style.RESET_ALL} seconds'
-      )
-    elif total_compile_time < 3:
-      print(
-        f'\n({ticker}) file compilation took: {Fore.YELLOW}{comp_time}{Style.RESET_ALL} seconds'
-      )
-    elif total_compile_time > 4:
-      print(
-        f'\n({ticker}) file compilation took: {Fore.RED}{comp_time}{Style.RESET_ALL} seconds'
-      )
+    core.outputCompileTime(total_compile_time, ticker)
     print('-----------------------------------------------------------------')
     return compiled_files
 
@@ -534,7 +553,7 @@ class core:
 
     cmd_list.insert(-1, '-c')
     cmd_list.insert(0, compiler_type)
-    cd_command = f'cd {"/".join(holding_list[-1].split("/")[:-1])}'
+    cd_command: str = f'cd {"/".join(holding_list[-1].split("/")[:-1])}'
     cmd_list.insert(0, f'{cd_command} ;')
     command: str = ' '.join(cmd_list)
     os.popen(command).read()  # No need to make 'compiler_return' var here
