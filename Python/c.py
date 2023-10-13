@@ -18,13 +18,9 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
-* Make all error messages red using colorama
-* Use the same method as -out to vary the lenght of
-the line depending on the lenght of the input args
 * Make it possible to compile multi source files and 
 print the output of both files... (func: handleVArguments)
-* Add a leave_obj_file arg that doesnt delete the .o file
-in compileDLL()
+* Add a objectFile compile function and argument '-obj'
 * COMPILE TO .EXE WHEN DONE CODING
 '''
 
@@ -61,7 +57,7 @@ class core:
       core.compileFiles(arg_table)  # Also only one output
     else:
       if 'arg1' not in arg_table:
-        print('Neither "exe_name" or "dll_name" is in argument list.')
+        print(f'{Fore.RED}Neither "exe_name" or "dll_name" is in argument list.{Style.RESET_ALL}')
         return vars.exit_code
       else:
         core.handleVArguments(arg_table)
@@ -103,7 +99,7 @@ class core:
 
       elif arg.endswith('.o'):
         object_file_counter += 1
-        if os.path.exists(arg):
+        if os.path.exists(arg) or arg_counter > 0:
           file_map[f'object_file{object_file_counter}']: str = arg
         else:
           vars.error(error_type='r', runtime_error='A file argument cannot be found')
@@ -137,7 +133,7 @@ class core:
 
     if exe_file_counter + dll_file_counter == 0:
       if vars.DEV_MODE is not True:
-        print('No executable file name given to compile too.')
+        print(f'{Fore.RED}No executable file name given to compile too.{Style.RESET_ALL}')
         return vars.exit_code
     return file_map
 
@@ -271,6 +267,9 @@ class core:
         elif 'exe_name' in file_map and 'exe_name2' not in file_map:
           exe_file: str = core.compileFiles(file_map)
         core.executeFileAndPrint(exe_file)
+
+      if arg == '-obj':
+        core.compileObject(file_map)
 
   def determineCompiler(file_list: list) -> str:
     """
@@ -509,6 +508,54 @@ class core:
     print('-----------------------------------------------------------------')
     return output_file
 
+  def compileObject(file_map: dict) -> str:
+    """
+    Turns a .c or .cpp file into a .o file
+
+    Args:
+      file_map (dict): The map of files from determineArguments()
+
+    Returns:
+      str: The compiled files path/name
+    """
+    if not isinstance(file_map, dict):
+      vars.error(error_type='p', var='file_map', type='dict')
+      return vars.exit_code
+
+    st: float = time.time()
+    file_list: list = list(file_map.values())
+    compiler_type: str = core.determineCompiler(file_list)
+    passed_files: list = []
+    holding_list: list = []
+    cmd_list: list = []
+
+    for file in file_list:
+      if file.endswith('.cpp'):
+        passed_files.append(file.replace('.cpp', '.o'))
+        cmd_list.append(file)
+      elif file.endswith('.c'):
+        passed_files.append(file.replace('.c', '.o'))
+        cmd_list.append(file)
+      elif file.endswith('.o'):
+        passed_files.append(file)
+        object_file: str = file.replace('\\', '/')
+    #core.compileCountdown()
+    print(holding_list, cmd_list, passed_files)
+
+    cmd_list.insert(-1, '-c')
+    cmd_list.insert(0, compiler_type)
+    # NOTE: I think for every dir we cd to we add a ../ to the compile file
+    cd_command: str = f'cd {"/".join(object_file.split("/")[:-1])}'
+    cmd_list.insert(0, f'{cd_command} ;')
+    command: str = ' '.join(cmd_list)
+    print(command)  # Whenever changing dirs to the output one we cannot
+    # compile the source file without adding ../.. to get to the directory
+    # EX: (cd out/sub ; gcc -c ../../src/foo.c) out/sub is the output dir
+    # and src/foo.c is the location of the source file after compilation
+    # in this example the compiled file should be in out/sub/foo.o but 
+    # we must cd back then into the directory
+    print(os.popen(command).read())
+
   def compileDLL(file_map: dict) -> str:
     # I know this is a long function for only making like 3 sys calls with but this is
     # the legacy way of make .dll files (https://www.cygwin.com/cygwin-ug-net/dll.html)
@@ -584,4 +631,4 @@ class core:
     return output_file
 
 
-core.compilationCall()
+core.compileObject(core.determineArguments())#core.compilationCall()
