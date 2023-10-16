@@ -24,6 +24,9 @@ class helper:
     ID.insert(7, '-')
     return ''.join(ID)
 
+
+class scride:  # I think this means writer change later
+
   def makePage() -> int:
     page_num: int = 0
     for page in range(vars.book_pg_count):
@@ -52,9 +55,9 @@ class helper:
       page_num += 1
       page_char_count: int = len(''.join(page_list))
       print(f'Page #{page_num} finished. ({page_char_count} characters)')
-      with open('book.txt', 'w') as book:
+      with open(f'{helper.genID()}.txt', 'a') as book:
         for line in page_list:
           book.write(f'{line}\n')
       
 
-helper.makePage()
+scride.makePage()
