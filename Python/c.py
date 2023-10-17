@@ -631,4 +631,4 @@ class core:
     return output_file
 
 
-core.compileObject(core.determineArguments())#core.compilationCall()
+core.compilationCall()
