@@ -18,10 +18,9 @@ import requests
 
 # TODO
 '''
-* Add a real word generator so i can incorporate real words
-into books if a certain argument is given
+* Add a argument to only add random words from the 'generateWordList'
+function to 'generate_cases' and 'make_books'
 * Make the unzip function actually work
-* Add isinstance and all that stuff
 * Add doc-strings
 * COMPILE TO .EXE
 '''
@@ -70,27 +69,34 @@ class Helper:
         os.remove(item)
 
   @staticmethod
-  def generateWordList():
-    # Generates a random sentence for type function
-    word_site = 'https://www.mit.edu/~ecprice/wordlist.10000'
+  def generateWordList() -> list:
+    """
+    Generates random sets of words this function is slow though
+    due to the web request it takes upward or .7 seconds
+
+    Returns:
+      list: The list of words
+    """
+    word_site: str = 'https://www.mit.edu/~ecprice/wordlist.10000'
+    # Weird type (runs faster if I don't define)
     response = requests.get(word_site)
-    baselist = []
-    listA = []
-    ticker = -1
+    baselist: list = []
+    ret_list: list = []
+    ticker: int = -1
 
     for i in range(1000):
       baselist.append(random.choice(response.content.splitlines()))
     for word in baselist:
       if len(word) >= 5:
-        listA.append(word)
+        ret_list.append(word)
       else:
         pass
-    for item in listA:
+    for item in ret_list:
       if isinstance(item, bytes):
         ticker += 1
-        listA[ticker] = item.decode()
+        ret_list[ticker]: str = item.decode()
 
-    return listA
+    return ret_list
 
   @staticmethod
   def zip_books(file_list: list, output_path: str) -> str:
@@ -111,14 +117,21 @@ class Helper:
       Vars.error(error_type='p', var='output_path', type='string')
       return Vars.exit_code
 
-    dump_dir: str = Helper.gen_id()  # Not a case because it's removed after use
+    dump_dir: str = f'{os.getcwd()}/{Helper.gen_id()}'.replace('\\', '/')
     os.mkdir(dump_dir)
     for target in file_list:
-      target_file: str = target.split('\\')[-1]
+      if 'linux' in Vars.platform:
+        target_file: str = target.split('/')[-1]
+      else:
+        target_file: str = target.split('\\')[-1]
       with open(target, 'rb') as file_in:
         content: bytes = file_in.read()
-      with open(target_file, 'wb') as file_out:
-        file_out.write(content)
+      if 'linux' in Vars.platform:
+        with open(f'{dump_dir}/{target_file}', 'wb') as file_out:
+          file_out.write(content)
+      else:
+        with open(f'{dump_dir}/{target_file}', 'wb') as file_out:
+          file_out.write(content)
 
     zip_file: str = shutil.make_archive(output_path, 'zip', dump_dir)
     shutil.rmtree(dump_dir)
@@ -143,9 +156,15 @@ class Helper:
       Vars.error(error_type='p', var='zip_path', type='string')
       return Vars.exit_code
 
-    #out_dir: str = f'{os.getcwd()}/{Helper.gen_id()}'.replace('\\', '/')
-    #os.mkdir(out_dir)
-    shutil.unpack_archive(zip_path)
+    out_dir: str = f'{os.getcwd()}/{Helper.gen_id()}'.replace('\\', '/')
+    os.mkdir(out_dir)
+    shutil.unpack_archive(
+      filename=zip_path, 
+      extract_dir=out_dir,
+      format='zip'
+    )  # Then unzip all cases in the library to do this we first
+    # must find the list of .zip files inside the out_dir then unzip 
+    # each into their own folder named after the original one
     return zip_path
 
   @staticmethod
@@ -289,13 +308,19 @@ class Scribe:
 
     for zip in zip_list:
       idx: int = zip_list.index(zip)
-      file_name: str = '/'.join(zip.split('\\')[-3:])
+      if 'linux' in Vars.platform:
+        file_name: str = '/'.join(zip.split('/')[-3:])
+      else: 
+        file_name: str = '/'.join(zip.split('\\')[-3:])
       file_size: int | float = round(os.path.getsize(zip_list[idx]) / 125000, 2)
       print(f'{idx + 1}. Archive "{file_name}" is {file_size} MB')
 
     master_zip: str = Helper.zip_books(zip_list, Helper.gen_id(lib=True))
     master_size: int | float = round(os.path.getsize(master_zip) / 125000, 2)
-    master_name: str = '/'.join(master_zip.split('\\')[-3:])
+    if 'linux' in Vars.platform:
+      master_name: str = '/'.join(master_zip.split('/')[-3:])
+    else:
+      master_name: str = '/'.join(master_zip.split('\\')[-3:])
     print(f'Master archive "{master_name}" is {master_size} MB')
     print('----------------------------------------------')
     return master_zip
