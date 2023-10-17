@@ -1,6 +1,7 @@
 import os, sys
 import random
 import shutil
+import requests
 
 # CODE
 '''
@@ -17,7 +18,9 @@ import shutil
 
 # TODO
 '''
-* Find out whats causing permissions error
+* Add a real word generator so i can incorporate real words
+into books if a certain argument is given
+* Make the unzip function actually work
 * Add isinstance and all that stuff
 * Add doc-strings
 * COMPILE TO .EXE
@@ -61,11 +64,37 @@ class Helper:
       return Vars.exit_code
 
     for item in os.listdir('/home/runner/dev'):
-      if rm_zip is True:
-        if item.endswith('.zip'):
-          os.remove(item)
+      if rm_zip is True and item.endswith('.zip'):
+        os.remove(item)
       if item.endswith('.txt'):
         os.remove(item)
+
+  @staticmethod
+  def generateWordList():
+    # Generates a random sentence for type function
+    word_site = 'https://www.mit.edu/~ecprice/wordlist.10000'
+    response = requests.get(word_site)
+    baselist = []
+    listA = []
+    ticker = -1
+
+    for i in range(random.randint(6, 16)):
+      baselist.append(random.choice(response.content.splitlines()))
+
+    for word in baselist:
+      if len(word) >= 5 and len(listA) < 10:
+        listA.append(word)
+      else:
+        pass
+
+    for item in listA:
+      if isinstance(item, bytes):
+        ticker += 1
+        listA[ticker] = item.decode()
+    first_item = list(listA[0])
+    first_item[0] = first_item[0].upper()
+    listA[0] = ''.join(first_item)
+    return listA
 
   @staticmethod
   def zip_books(file_list: list, output_path: str) -> str:
@@ -167,9 +196,14 @@ class Helper:
 class Scribe:
 
   @staticmethod
-  def make_10_books() -> list:
+  def make_books(amount: int = 10, output_dir: str = '') -> list:
     """
-    Makes 10 books in current directory
+    Makes 10 (or 'n') books in current directory
+
+    Args:
+      amount (int): The amount of books to make
+      output_dir (str): The path to the output directory
+      from the current directory
 
     Returns:
       list: The list of paths to each book
@@ -179,9 +213,12 @@ class Scribe:
     book_char_count: int = 0
     group_char_count: int = 0
 
-    for book in range(10):
+    for book in range(amount):
       page_num: int = 0
-      book_path: str = f'{Helper.gen_id()}.txt'
+      if output_dir != '':  # Might have to add a os.getcwd() later
+        book_path: str = f'{output_dir}/{Helper.gen_id()}.txt'.replace('\\', '/')
+      else:
+        book_path: str = f'{Helper.gen_id()}.txt'
 
       for page in range(Vars.book_pg_count):
         page_list: list = []
@@ -246,7 +283,7 @@ class Scribe:
 
     zip_list: list = []
     for book_cycle in range(amount):
-      case_list: list = Scribe.make_10_books()
+      case_list: list = Scribe.make_books()
       if book_cycle + 1 == amount:
         print('----------------------------------------------')
       else:
