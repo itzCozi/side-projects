@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 import random
 import shutil
 import requests
@@ -159,11 +160,11 @@ class Helper:
     out_dir: str = f'{os.getcwd()}/{Helper.gen_id()}'.replace('\\', '/')
     os.mkdir(out_dir)
     shutil.unpack_archive(
-      filename=zip_path, 
+      filename=zip_path,
       extract_dir=out_dir,
       format='zip'
     )  # Then unzip all cases in the library to do this we first
-    # must find the list of .zip files inside the out_dir then unzip 
+    # must find the list of .zip files inside the out_dir then unzip
     # each into their own folder named after the original one
     return zip_path
 
@@ -241,7 +242,8 @@ class Scribe:
 
         title_list: list = []
         title_str: str = ''.join(random.choices(Vars.alphabet, k=12))
-        for i in range(52): title_list.append(' ')
+        for i in range(52):
+          title_list.append(' ')
         title_list.insert(int(52 / 2), title_str)
         page_list.append(''.join(title_list))  # Append title to page
 
@@ -294,7 +296,8 @@ class Scribe:
       return Vars.exit_code
     if 'linux' in Vars.platform and Vars.DEV_MODE is True:  # For testing VM
       del_files: str = input('Delete all .txt and .zip files in dev? (y/n): ')
-      if del_files == 'y' or del_files == 'yes': Helper.clear_books_from_vm(True)
+      if del_files == 'y' or del_files == 'yes':
+        Helper.clear_books_from_vm(True)
 
     zip_list: list = []
     for book_cycle in range(amount):
@@ -310,7 +313,7 @@ class Scribe:
       idx: int = zip_list.index(zip)
       if 'linux' in Vars.platform:
         file_name: str = '/'.join(zip.split('/')[-3:])
-      else: 
+      else:
         file_name: str = '/'.join(zip.split('\\')[-3:])
       file_size: int | float = round(os.path.getsize(zip_list[idx]) / 125000, 2)
       print(f'{idx + 1}. Archive "{file_name}" is {file_size} MB')
