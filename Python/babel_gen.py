@@ -78,22 +78,18 @@ class Helper:
     listA = []
     ticker = -1
 
-    for i in range(random.randint(6, 16)):
+    for i in range(1000):
       baselist.append(random.choice(response.content.splitlines()))
-
     for word in baselist:
-      if len(word) >= 5 and len(listA) < 10:
+      if len(word) >= 5:
         listA.append(word)
       else:
         pass
-
     for item in listA:
       if isinstance(item, bytes):
         ticker += 1
         listA[ticker] = item.decode()
-    first_item = list(listA[0])
-    first_item[0] = first_item[0].upper()
-    listA[0] = ''.join(first_item)
+
     return listA
 
   @staticmethod
