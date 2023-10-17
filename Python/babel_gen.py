@@ -92,7 +92,7 @@ class Helper:
       target_file: str = target.split('\\')[-1]
       with open(target, 'rb') as file_in:
         content: bytes = file_in.read()
-      with open(f'{dump_dir}/{target_file}', 'wb') as file_out:
+      with open(target_file, 'wb') as file_out:
         file_out.write(content)
 
     zip_file: str = shutil.make_archive(output_path, 'zip', dump_dir)
@@ -100,6 +100,28 @@ class Helper:
     for file in file_list:
       os.remove(file)
     return zip_file
+
+  @staticmethod
+  def unzip_books(zip_path: str) -> str:  # Doesnt work
+    """
+    Unzips the given zip file
+
+    Args:
+      zip_path (list): The path to the zip file
+
+    Returns:
+      str: The path of the unzipped folder
+    """
+    # Puts all files in a zip file into a folder (dir)
+    # https://www.geeksforgeeks.org/python-shutil-unpack_archive-method/
+    if not isinstance(zip_path, str):
+      Vars.error(error_type='p', var='zip_path', type='string')
+      return Vars.exit_code
+
+    #out_dir: str = f'{os.getcwd()}/{Helper.gen_id()}'.replace('\\', '/')
+    #os.mkdir(out_dir)
+    shutil.unpack_archive(zip_path)
+    return zip_path
 
   @staticmethod
   def gen_id(zip: bool = False, lib: bool = False) -> str:
@@ -205,12 +227,15 @@ class Scribe:
     return book_list
 
   @staticmethod
-  def generate_cases(amount: int) -> None:
+  def generate_cases(amount: int) -> str:
     """
     Zips books together into cases and library's
 
     Args:
       amount (int): The amount of cases in the library
+
+    Returns:
+      str: The path to the library containing each case
     """
     if not isinstance(amount, int):
       Vars.error(error_type='p', var='amount', type='integer')
@@ -240,7 +265,8 @@ class Scribe:
     master_name: str = '/'.join(master_zip.split('\\')[-3:])
     print(f'Master archive "{master_name}" is {master_size} MB')
     print('----------------------------------------------')
+    return master_zip
 
 
 if __name__ == "__main__":
-  Scribe.generate_cases(5)
+  Scribe.generate_cases(1)
