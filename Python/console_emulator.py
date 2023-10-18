@@ -16,9 +16,9 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
-* Add a sys overide so i can pass
-any text to the os.system function
-* Add size function
+* Add size function and make it scale to the files
+size so if its like 4 KB we print 4 KB instead of a
+fixed mesurement we use KB MB and GB
 * Add doc-strings
 * COMPILE TO .EXE
 '''
@@ -51,9 +51,17 @@ class Interface:
 
     while loop is True:
       cmd: str = input('> ')
+      cmd_list: list = cmd.split(' ')
       keyword: str = cmd.split(' ')[0].lower()
 
-      if keyword == commands[0]:
+      if keyword == '<sys>':  # Passes cmd directly to system
+        cmd_dupe: list = cmd_list.copy() 
+        if 'ps' in cmd_dupe:
+          idx = cmd_dupe.index('ps')
+          cmd_dupe[idx] = 'powershell'
+        os.system(' '.join(cmd_dupe[1:]))
+
+      elif keyword == commands[0]:
         Commands.cd(cmd.split(' ')[1])
 
       elif keyword == commands[1]:
@@ -175,6 +183,8 @@ class Commands:
         if char in Globals.invaild_char_list:
           print(f'There is an invaild character in {dir}.')
           return Globals.exit_code
+        else:
+          continue
       os.mkdir(f'{cur_dir}/{dir}')
 
   def clear() -> None:
