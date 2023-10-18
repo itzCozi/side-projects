@@ -42,13 +42,16 @@ class Interface:
     loop: bool = True
 
     while loop is True:
-      cmd: str = input('> ').lower()
-      if cmd.split(' ')[0] == 'cd':
+      cmd: str = input('> ')
+
+      if cmd.split(' ')[0].lower() == 'cd':
         Commands.cd(cmd.split(' ')[1])
-      elif cmd.split(' ')[0] == 'ls':
+      elif cmd.split(' ')[0].lower() == 'ls':
         Commands.ls()
-      elif cmd.split(' ')[0] == 'pwd':
+      elif cmd.split(' ')[0].lower() == 'pwd':
         Commands.pwd()
+      elif cmd.split(' ')[0].lower() == 'echo':
+        Commands.echo(cmd.split(' ')[1:])
       else:
         print(f'Given command {cmd} is invalid.')
 
@@ -106,5 +109,8 @@ class Commands:
     current_dir = os.getcwd()
     print(current_dir)
 
+  def echo(message: list) -> None:
+    formatted_out: str = ' '.join(message)
+    print(formatted_out)
 
 Interface.command_loop()
