@@ -16,7 +16,7 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
-* Add mkdir function
+* Add size function
 * Add doc-strings
 * COMPILE TO .EXE
 '''
@@ -26,6 +26,7 @@ class Globals:
   exit_code: None = None
   platform: str = sys.platform
   current_working_dir: str = os.getcwd()
+  invaild_char_list: list = list('/\\:*?"<>|')
   command_map: dict = {
     "cd": 0,
     "ls": 1,
@@ -34,7 +35,8 @@ class Globals:
     "clear": 4,
     "touch": 5,
     "rm": 6,
-    "mkdir": 7
+    "mkdir": 7,
+    "size": 8  # Prints the size of a file or dir
   }
 
 
@@ -68,7 +70,10 @@ class Interface:
         Commands.touch(cmd.split(' ')[1])
 
       elif keyword == commands[6]:
-        Commands.rm(cmd.split(' ')[1], cmd.split(' ')[1:])
+        Commands.rm(cmd.split(' ')[1:])
+
+      elif keyword == commands[7]:
+        Commands.mkdir(cmd.split(' ')[1:])
 
       else:
         print(f'Given command {cmd} is invalid.')
@@ -129,7 +134,7 @@ class Commands:
     with open(f'{current_dir}/{file_name}', 'x') as file:
       file.close()
 
-  def rm(args: str, file_list: list) -> None:
+  def rm(file_list: list) -> None:
     for file in file_list:
       del_question: str = f'Are you sure you want to delete {file}? (y/n): '
 
@@ -160,6 +165,15 @@ class Commands:
   def echo(message: list) -> None:
     formatted_out: str = ' '.join(message)
     print(formatted_out)
+
+  def mkdir(dir_name_list: list) -> None:
+    cur_dir: str = os.getcwd().replace('\\', '/')
+    for dir in dir_name_list:
+      for char in dir:
+        if char in Globals.invaild_char_list:
+          print(f'There is an invaild character in {dir}.')
+          return Globals.exit_code
+      os.mkdir(f'{cur_dir}/{dir}')
 
   def clear() -> None:
     if 'linux' in Globals.platform:
