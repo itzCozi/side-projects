@@ -16,6 +16,8 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
+* Add a sys overide so i can pass
+any text to the os.system function
 * Add size function
 * Add doc-strings
 * COMPILE TO .EXE
