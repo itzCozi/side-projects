@@ -33,7 +33,6 @@ without arguments are at the bottom
 class Globals:
   exit_code: None = None
   platform: str = sys.platform
-  current_working_dir: str = os.getcwd()
   invaild_char_list: list = list('/\\:*?"<>|')
   command_map: dict = {
     "cd": 0x0,         # * Change current directory
@@ -47,7 +46,7 @@ class Globals:
     "size": 0x8,       # * Prints the size of a file or dir
     "cat": 0x9,        # * Prints the content of a file
     "kill": 0xA,       # * Kills a process by name
-    "user": 0xB,       # Prints the current user
+    "user": 0xB,       # * Prints the current user
     "mov": 0xC,        # Moves a file or dir to a new path
     "run": 0xD,        # Runs the given file
     "rename": 0xE,     # Renames the given file
@@ -62,6 +61,7 @@ class Globals:
 
 class Helper:
 
+  @staticmethod
   def get_PID(process: str) -> list:
     # Returns a process PID from name
     if 'linux' in Globals.platform:
@@ -82,13 +82,15 @@ class Helper:
           retlist.append(proc_info)
       return retlist
 
-  def command_loop() -> str:
+  @staticmethod
+  def shell_initialize() -> None:
     # Handles calling the right command and sending arguments
     commands: list = list(Globals.command_map.keys())
     loop: bool = True
 
     while loop is True:
-      cmd: str = input('> ')
+      cur_dir: str = os.getcwd().replace('\\', '/')
+      cmd: str = input(f'{cur_dir} $ ')
       cmd_list: list = cmd.split(' ')
       keyword: str = cmd.split(' ')[0].lower()
 
@@ -147,12 +149,14 @@ class Helper:
 
 class Commands:
 
+  @staticmethod
   def cd(path: str) -> None:
     path: str = path.replace('\\', '/')
 
     if 'linux' in Globals.platform:
       if path == '~':
         os.chdir(os.path.expanduser('~'))
+        return Globals.exit_code
       if '..' in path:
         path_list: list = list(path.split('/'))
         if len(path_list) > 1:
@@ -161,11 +165,11 @@ class Commands:
         os.chdir(path)
       else:
         os.chdir(path)
-      Globals.current_working_dir: str = os.getcwd()
 
     else:
-      if path == 'C:':
+      if path == 'C:' or path == '~':
         os.chdir(os.path.expanduser('C:'))
+        return Globals.exit_code
       if '..' in path:
         path_list: list = list(path.split('/'))
         if len(path_list) > 1:
@@ -174,8 +178,8 @@ class Commands:
         os.chdir(path)
       else:
         os.chdir(path)
-      Globals.current_working_dir: str = os.getcwd()
 
+  @staticmethod
   def ls() -> None:
     dir: str = os.getcwd().replace('\\', '/')
     dir_items: list = os.listdir(dir)
@@ -195,6 +199,7 @@ class Commands:
         ticker: int = 0
     print('---------------------------------------------')
 
+  @staticmethod
   def rm(file_list: list) -> None:
     for file in file_list:
       del_question: str = f'Are you sure you want to delete {file}? (y/n): '
@@ -219,6 +224,7 @@ class Commands:
           else:
             return Globals.exit_code
 
+  @staticmethod
   def mkdir(dir_name_list: list) -> None:
     cur_dir: str = os.getcwd().replace('\\', '/')
     for dir in dir_name_list:
@@ -230,6 +236,7 @@ class Commands:
           continue
       os.mkdir(f'{cur_dir}/{dir}')
 
+  @staticmethod
   def size(file_name_list: list) -> None:
     for file in file_name_list:
       current_dir: str = os.getcwd().replace('\\', '/')
@@ -259,6 +266,7 @@ class Commands:
 
       print(f'{file} is {size} {size_type}')
 
+  @staticmethod
   def dir(directory: str = '') -> None:
     ticker: int = 0
     if directory == '':
@@ -282,6 +290,7 @@ class Commands:
     if new_line is True:
       print()
 
+  @staticmethod
   def kill(process: str) -> None:
     if '.exe' in process:
       process: str = process[:-4]
@@ -292,6 +301,7 @@ class Commands:
       print(f'Killed process: {PID}')
     print(f'Killed all processes under the {process} parent process.')
 
+  @staticmethod
   def cat(file_name: str) -> None:
     file_name: str = file_name.replace('\\', '/')
     cur_dir: str = os.getcwd().replace('\\', '/')
@@ -307,28 +317,33 @@ class Commands:
 
   # ----- Smaller Functions ----- #
 
+  @staticmethod
   def touch(file_name: str) -> None:
     current_dir: str = os.getcwd().replace('\\', '/')
     with open(f'{current_dir}/{file_name}', 'x') as file:
       file.close()
 
+  @staticmethod
   def echo(message: list) -> None:
     formatted_out: str = ' '.join(message)
     print(formatted_out)
 
+  @staticmethod
   def user() -> None:
     current_user: str = os.getlogin()
     print(current_user)
 
+  @staticmethod
   def clear() -> None:
     if 'linux' in Globals.platform:
       os.system('clear')
     else:
       os.system('cls')
 
+  @staticmethod
   def pwd() -> None:
     current_dir: str = os.getcwd()
     print(current_dir)
 
 
-Helper.command_loop()
+Helper.shell_initialize()
