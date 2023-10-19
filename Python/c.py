@@ -227,14 +227,14 @@ class core:
         print('Hello, World!')
         return vars.exit_code
 
-      if arg == '-gf':  # Might not age well... (I hope it does tho)
+      if arg == '-gf':
         color_list: list = [
           Fore.BLUE, Fore.CYAN, Fore.GREEN, Fore.MAGENTA, Fore.RED,
           Fore.YELLOW, Fore.WHITE
         ]
         ticker: int = random.randint(0, len(color_list) - 1)
         char_count: int = -1
-        message: str = 'I Love You Dara!'
+        message: str = '!Feature Removed!'
         print('\033[?25l', end='')
 
         for i in range(100):  # Takes about 10 seconds
