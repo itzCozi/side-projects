@@ -1,7 +1,9 @@
 # Emulates the windows terminal and cmd
 import os
 import sys
+import signal
 import shutil
+import subprocess
 from colorama import Fore, Back, Style
 
 # CODE
@@ -39,8 +41,8 @@ class Globals:
     "rm": 0x6,         # * Remove or delete a file
     "mkdir": 0x7,      # * Create a new directory
     "size": 0x8,       # * Prints the size of a file or dir
-    "cat": 0x9,        # Prints the content of a file
-    "kill": 0xA,       # Kills a process by name
+    "cat": 0x9,        # * Prints the content of a file
+    "kill": 0xA,       # * Kills a process by name
     "user": 0xB,       # Prints the current user
     "mov": 0xC,        # Moves a file or dir to a new path
     "run": 0xD,        # Runs the given file
@@ -54,7 +56,7 @@ class Globals:
   }
 
 
-class Interface:
+class Helper:
 
   def command_loop() -> str:
     # Handles calling the right command and sending arguments
@@ -99,6 +101,12 @@ class Interface:
 
       elif keyword == commands[8]:
         Commands.size(cmd.split(' ')[1:])
+
+      elif keyword == commands[9]:
+        Commands.cat(cmd.split(' ')[1])
+
+      elif keyword == commands[10]:
+        Commands.kill(cmd.split(' ')[1])
 
       elif keyword == commands[20]:
         if len(cmd_list) > 1:
@@ -248,6 +256,33 @@ class Commands:
     if new_line is True:
       print()
 
+  def cat(file_name: str) -> None:
+    file_name: str = file_name.replace('\\', '/')
+    cur_dir: str = os.getcwd().replace('\\', '/')
+
+    try:
+      with open(file_name) as f:
+        content = f.read()
+    except FileNotFoundError:
+      print(f'Given file {file_name} cannot be found in {cur_dir}.')
+      return Globals.exit_code
+
+    print(content)
+
+  def kill(process: str) -> None:
+    if '.exe' in process:
+      process: str = process[:-4]
+
+    child = subprocess.Popen(['pgrep', '-f', process], stdout=subprocess.PIPE, shell=False)
+    response = child.communicate()[0]
+    PID_list = [int(pid) for pid in response.split()]
+
+    for PID in PID_list:
+      os.kill(PID, signal.SIGTERM)
+      print(f'Killed process: {PID}')
+    print(f'Killed all processes under the {process} parent process.')
+
+
   def touch(file_name: str) -> None:
     current_dir: str = os.getcwd().replace('\\', '/')
     with open(f'{current_dir}/{file_name}', 'x') as file:
@@ -268,4 +303,4 @@ class Commands:
     print(formatted_out)
 
 
-Interface.command_loop()
+Helper.command_loop()
