@@ -86,7 +86,7 @@ class Interface:
         Commands.mkdir(cmd.split(' ')[1:])
 
       elif keyword == commands[8]:
-        Commands.size(cmd.split(' ')[1])
+        Commands.size(cmd.split(' ')[1:])
 
       else:
         print(f'Given command {cmd} is invalid.')
@@ -177,22 +177,28 @@ class Commands:
           continue
       os.mkdir(f'{cur_dir}/{dir}')
 
-  def size(file_name: str) -> None:
-    current_dir: str = os.getcwd().replace('\\', '/')
-    #file_path: str = f'{current_dir}/{file_name}'
-    byte_size: int = os.path.getsize(file_name)
+  def size(file_name_list: list) -> None:
+    # TODO: Use this method instead its easier
+    # (https://www.geeksforgeeks.org/how-to-get-size-of-folder-using-python/)
+    for file in file_name_list:
+      current_dir: str = os.getcwd().replace('\\', '/')
+      file_path: str = f'{current_dir}/{file}'
+      byte_size: int = os.path.getsize(file_path)
 
-    if byte_size > 1000:  # KB
-      size_type: str = 'KB'
-      size: int | float = round(byte_size / 1000, 2)
-    elif byte_size > 1000000:  # MB
-      size_type: str = 'MB'
-      size: int | float = round(byte_size / 1000000, 2)
-    elif byte_size > 1000000000:  # GB
-      size_type: str = 'GB'
-      size: int | float = round(byte_size / 1000000000, 2)
+      if byte_size > 1000:  # KB
+        size_type: str = 'KB'
+        size: int | float = round(byte_size / 1000, 2)
+      elif byte_size > 1000000:  # MB
+        size_type: str = 'MB'
+        size: int | float = round(byte_size / 1000000, 2)
+      elif byte_size > 1000000000:  # GB
+        size_type: str = 'GB'
+        size: int | float = round(byte_size / 1000000000, 2)
+      else:
+        size_type: str = 'Bytes'
+        size: int | float = round(byte_size, 2)
 
-    print(f'{file_name} is {size} {size_type}')
+      print(f'{file} is {size} {size_type}')
 
   def touch(file_name: str) -> None:
     current_dir: str = os.getcwd().replace('\\', '/')
