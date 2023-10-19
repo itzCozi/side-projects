@@ -29,16 +29,29 @@ class Globals:
   platform: str = sys.platform
   current_working_dir: str = os.getcwd()
   invaild_char_list: list = list('/\\:*?"<>|')
-  command_map: dict = {
-      "cd": 0,
-      "ls": 1,
-      "pwd": 2,
-      "echo": 3,
-      "clear": 4,
-      "touch": 5,
-      "rm": 6,
-      "mkdir": 7,
-      "size": 8  # Prints the size of a file or dir
+  command_map: dict = {  # Replace int's with hex
+    "cd": 0,         # Change current directory
+    "ls": 1,         # Display all files and dirs
+    "pwd": 2,        # Print the current path
+    "echo": 3,       # Print a string
+    "clear": 4,      # Clear the console
+    "touch": 5,      # Create a new file
+    "rm": 6,         # Remove or delete a file
+    "mkdir": 7,      # Create a new directory
+    "size": 8,       # Prints the size of a file or dir
+
+    "cat": 9,        # Prints the content of a file
+    "kill": 10,      # Kills a process by name
+    "user": 11,      # Prints the current user
+    "mov": 12,       # Moves a file or dir to a new path
+    "run": 13,       # Runs the given file
+    "rename": 14,    # Renames the given file
+    "sleep": 15,     # Sleep for a period of time
+    "sum": 16,       # Print checksum of file
+    "uptime": 17,    # Prints up time
+    "zip": 18,       # Zip a file in the current dir
+    "info": 19,      # Displays info about the file
+    "dir": 20,       # Shows all items in a directory
   }
 
 
@@ -87,6 +100,12 @@ class Interface:
 
       elif keyword == commands[8]:
         Commands.size(cmd.split(' ')[1:])
+
+      elif keyword == commands[20]:
+        if len(cmd_list) > 1:
+          Commands.dir(cmd.split(' ')[1])
+        else:
+          Commands.dir()
 
       else:
         print(f'Given command {cmd} is invalid.')
@@ -178,12 +197,18 @@ class Commands:
       os.mkdir(f'{cur_dir}/{dir}')
 
   def size(file_name_list: list) -> None:
-    # TODO: Use this method instead its easier
-    # (https://www.geeksforgeeks.org/how-to-get-size-of-folder-using-python/)
     for file in file_name_list:
       current_dir: str = os.getcwd().replace('\\', '/')
       file_path: str = f'{current_dir}/{file}'
-      byte_size: int = os.path.getsize(file_path)
+      if os.path.isfile(file_path):
+        byte_size: int = os.path.getsize(file_path)
+
+      else:
+        byte_size: int = 0
+        for path, dirs, files in os.walk(file_path):
+          for f in files:
+            fp = os.path.join(path, f)
+            byte_size += os.path.getsize(fp)
 
       if byte_size > 1000:  # KB
         size_type: str = 'KB'
@@ -199,6 +224,30 @@ class Commands:
         size: int | float = round(byte_size, 2)
 
       print(f'{file} is {size} {size_type}')
+
+  def dir(directory: str = '') -> None:
+    ticker: int = 0
+    if directory == '':
+      directory: str = os.getcwd()
+    directory: str = directory.replace('\\', '/')
+
+    for item in os.listdir(directory):
+      ticker += 1
+      if os.path.isdir(item):
+        color: str = Fore.YELLOW
+      else:
+        color: str = Fore.WHITE
+
+      if ticker == 3:
+        print(f'{color}{item}{Style.RESET_ALL}')
+        ticker: int = 0
+        new_line: bool = False
+      else:
+        print(f'{color}{item}{Style.RESET_ALL}', end='  ')
+        new_line: bool = True
+
+    if new_line is True:
+      print()
 
   def touch(file_name: str) -> None:
     current_dir: str = os.getcwd().replace('\\', '/')
