@@ -29,29 +29,28 @@ class Globals:
   platform: str = sys.platform
   current_working_dir: str = os.getcwd()
   invaild_char_list: list = list('/\\:*?"<>|')
-  command_map: dict = {  # Replace int's with hex
-    "cd": 0,         # Change current directory
-    "ls": 1,         # Display all files and dirs
-    "pwd": 2,        # Print the current path
-    "echo": 3,       # Print a string
-    "clear": 4,      # Clear the console
-    "touch": 5,      # Create a new file
-    "rm": 6,         # Remove or delete a file
-    "mkdir": 7,      # Create a new directory
-    "size": 8,       # Prints the size of a file or dir
-
-    "cat": 9,        # Prints the content of a file
-    "kill": 10,      # Kills a process by name
-    "user": 11,      # Prints the current user
-    "mov": 12,       # Moves a file or dir to a new path
-    "run": 13,       # Runs the given file
-    "rename": 14,    # Renames the given file
-    "sleep": 15,     # Sleep for a period of time
-    "sum": 16,       # Print checksum of file
-    "uptime": 17,    # Prints up time
-    "zip": 18,       # Zip a file in the current dir
-    "info": 19,      # Displays info about the file
-    "dir": 20,       # Shows all items in a directory
+  command_map: dict = {
+    "cd": 0x0,         # * Change current directory
+    "ls": 0x1,         # * Display all files and dirs
+    "pwd": 0x2,        # * Print the current path
+    "echo": 0x3,       # * Print a string
+    "clear": 0x4,      # * Clear the console
+    "touch": 0x5,      # * Create a new file
+    "rm": 0x6,         # * Remove or delete a file
+    "mkdir": 0x7,      # * Create a new directory
+    "size": 0x8,       # * Prints the size of a file or dir
+    "cat": 0x9,        # Prints the content of a file
+    "kill": 0xA,       # Kills a process by name
+    "user": 0xB,       # Prints the current user
+    "mov": 0xC,        # Moves a file or dir to a new path
+    "run": 0xD,        # Runs the given file
+    "rename": 0xE,     # Renames the given file
+    "sleep": 0xF,      # Sleep for a period of time
+    "sum": 0x10,       # Print checksum of file
+    "uptime": 0x11,    # Prints up time
+    "zip": 0x12,       # Zip a file in the current dir
+    "info": 0x13,      # Displays info about the file
+    "dir": 0x14,       # * Shows all items in a directory
   }
 
 
