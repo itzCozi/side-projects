@@ -315,11 +315,11 @@ class Scribe:
         file_name: str = '/'.join(zip.split('/')[-3:])
       else:
         file_name: str = '/'.join(zip.split('\\')[-3:])
-      file_size: int | float = round(os.path.getsize(zip_list[idx]) / 125000, 2)
+      file_size: int | float = round(os.path.getsize(zip_list[idx]) / 1000, 2)
       print(f'{idx + 1}. Archive "{file_name}" is {file_size} MB')
 
     master_zip: str = Helper.zip_books(zip_list, Helper.gen_id(lib=True))
-    master_size: int | float = round(os.path.getsize(master_zip) / 125000, 2)
+    master_size: int | float = round(os.path.getsize(master_zip) / 1000, 2)
     if 'linux' in Vars.platform:
       master_name: str = '/'.join(master_zip.split('/')[-3:])
     else:

@@ -30,15 +30,15 @@ class Globals:
   current_working_dir: str = os.getcwd()
   invaild_char_list: list = list('/\\:*?"<>|')
   command_map: dict = {
-    "cd": 0,
-    "ls": 1,
-    "pwd": 2,
-    "echo": 3,
-    "clear": 4,
-    "touch": 5,
-    "rm": 6,
-    "mkdir": 7,
-    "size": 8  # Prints the size of a file or dir
+      "cd": 0,
+      "ls": 1,
+      "pwd": 2,
+      "echo": 3,
+      "clear": 4,
+      "touch": 5,
+      "rm": 6,
+      "mkdir": 7,
+      "size": 8  # Prints the size of a file or dir
   }
 
 
@@ -55,7 +55,7 @@ class Interface:
       keyword: str = cmd.split(' ')[0].lower()
 
       if keyword == '<sys>':  # Passes cmd directly to system
-        cmd_dupe: list = cmd_list.copy() 
+        cmd_dupe: list = cmd_list.copy()
         if 'ps' in cmd_dupe:
           idx = cmd_dupe.index('ps')
           cmd_dupe[idx] = 'powershell'
@@ -84,6 +84,9 @@ class Interface:
 
       elif keyword == commands[7]:
         Commands.mkdir(cmd.split(' ')[1:])
+
+      elif keyword == commands[8]:
+        Commands.size(cmd.split(' ')[1])
 
       else:
         print(f'Given command {cmd} is invalid.')
@@ -139,11 +142,6 @@ class Commands:
         ticker: int = 0
     print('---------------------------------------------')
 
-  def touch(file_name: str) -> None:
-    current_dir: str = os.getcwd().replace('\\', '/')
-    with open(f'{current_dir}/{file_name}', 'x') as file:
-      file.close()
-
   def rm(file_list: list) -> None:
     for file in file_list:
       del_question: str = f'Are you sure you want to delete {file}? (y/n): '
@@ -168,14 +166,6 @@ class Commands:
           else:
             return Globals.exit_code
 
-  def pwd() -> None:
-    current_dir: str = os.getcwd()
-    print(current_dir)
-
-  def echo(message: list) -> None:
-    formatted_out: str = ' '.join(message)
-    print(formatted_out)
-
   def mkdir(dir_name_list: list) -> None:
     cur_dir: str = os.getcwd().replace('\\', '/')
     for dir in dir_name_list:
@@ -187,11 +177,41 @@ class Commands:
           continue
       os.mkdir(f'{cur_dir}/{dir}')
 
+  def size(file_name: str) -> None:
+    current_dir: str = os.getcwd().replace('\\', '/')
+    #file_path: str = f'{current_dir}/{file_name}'
+    byte_size: int = os.path.getsize(file_name)
+
+    if byte_size > 1000:  # KB
+      size_type: str = 'KB'
+      size: int | float = round(byte_size / 1000, 2)
+    elif byte_size > 1000000:  # MB
+      size_type: str = 'MB'
+      size: int | float = round(byte_size / 1000000, 2)
+    elif byte_size > 1000000000:  # GB
+      size_type: str = 'GB'
+      size: int | float = round(byte_size / 1000000000, 2)
+
+    print(f'{file_name} is {size} {size_type}')
+
+  def touch(file_name: str) -> None:
+    current_dir: str = os.getcwd().replace('\\', '/')
+    with open(f'{current_dir}/{file_name}', 'x') as file:
+      file.close()
+
   def clear() -> None:
     if 'linux' in Globals.platform:
       os.system('clear')
     else:
       os.system('cls')
+
+  def pwd() -> None:
+    current_dir: str = os.getcwd()
+    print(current_dir)
+
+  def echo(message: list) -> None:
+    formatted_out: str = ' '.join(message)
+    print(formatted_out)
 
 
 Interface.command_loop()
