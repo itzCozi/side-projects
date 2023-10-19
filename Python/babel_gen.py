@@ -19,7 +19,7 @@ import requests
 
 # TODO
 '''
-* Add a argument to only add random words from the 'generateWordList'
+* Add a argument to only add random words from the 'generate_word_list'
 function to 'generate_cases' and 'make_books'
 * Make the unzip function actually work
 * Add doc-strings
@@ -70,7 +70,7 @@ class Helper:
         os.remove(item)
 
   @staticmethod
-  def generateWordList() -> list:
+  def generate_word_list() -> list:
     """
     Generates random sets of words this function is slow though
     due to the web request it takes upward or .7 seconds
