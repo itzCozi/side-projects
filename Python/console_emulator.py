@@ -18,9 +18,10 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
-* Add size function and make it scale to the files
-size so if its like 4 KB we print 4 KB instead of a
-fixed mesurement we use KB MB and GB
+* Implement exceptions and remove all print statments for 
+errors (i am growing out of it need something that works)
+* Organize Commands class so commands
+without arguments are at the bottom
 * Add doc-strings
 * COMPILE TO .EXE
 '''
@@ -49,7 +50,7 @@ class Globals:
     "rename": 0xE,     # Renames the given file
     "sleep": 0xF,      # Sleep for a period of time
     "sum": 0x10,       # Print checksum of file
-    "uptime": 0x11,    # Prints up time
+    "uptime": 0x11,    # Prints the uptime
     "zip": 0x12,       # Zip a file in the current dir
     "info": 0x13,      # Displays info about the file
     "dir": 0x14,       # * Shows all items in a directory
@@ -57,6 +58,26 @@ class Globals:
 
 
 class Helper:
+
+  def get_PID(process: str) -> list:
+    # Returns a process PID from name
+    if 'linux' in Globals.platform:
+      child: subprocess.Popen = subprocess.Popen(['pgrep', '-f', process], stdout=subprocess.PIPE, shell=False)
+      response: bytes = child.communicate()[0]
+      print(type(child), type(response))
+      return [int(pid) for pid in response.split()]
+
+    else:  # Windows way
+      retlist: list = []
+      output: str = os.popen(f'powershell Get-Process -Name {process}').read()
+      for line in output.splitlines():
+        if '  SI' in line:
+          index: int = line.find('  SI')
+        if '.' in line:
+          difference: str = line[:index]
+          proc_info: str = difference.split()[-1].replace(' ', '')
+          retlist.append(proc_info)
+      return retlist
 
   def command_loop() -> str:
     # Handles calling the right command and sending arguments
@@ -71,8 +92,8 @@ class Helper:
       if keyword == '<sys>':  # Passes cmd directly to system
         cmd_dupe: list = cmd_list.copy()
         if 'ps' in cmd_dupe:
-          idx = cmd_dupe.index('ps')
-          cmd_dupe[idx] = 'powershell'
+          idx: int = cmd_dupe.index('ps')
+          cmd_dupe[idx]: str = 'powershell'
         os.system(' '.join(cmd_dupe[1:]))
 
       elif keyword == commands[0]:
@@ -107,6 +128,9 @@ class Helper:
 
       elif keyword == commands[10]:
         Commands.kill(cmd.split(' ')[1])
+
+      elif keyword == commands[11]:
+        Commands.user()
 
       elif keyword == commands[20]:
         if len(cmd_list) > 1:
@@ -214,7 +238,7 @@ class Commands:
         byte_size: int = 0
         for path, dirs, files in os.walk(file_path):
           for f in files:
-            fp = os.path.join(path, f)
+            fp: str = os.path.join(path, f)
             byte_size += os.path.getsize(fp)
 
       if byte_size > 1000:  # KB
@@ -252,9 +276,18 @@ class Commands:
       else:
         print(f'{color}{item}{Style.RESET_ALL}', end='  ')
         new_line: bool = True
-
     if new_line is True:
       print()
+
+  def kill(process: str) -> None:
+    if '.exe' in process:
+      process: str = process[:-4]
+    PID_list: list = Helper.get_PID(process)
+
+    for PID in PID_list:
+      os.kill(int(PID), signal.SIGTERM)
+      print(f'Killed process: {PID}')
+    print(f'Killed all processes under the {process} parent process.')
 
   def cat(file_name: str) -> None:
     file_name: str = file_name.replace('\\', '/')
@@ -262,31 +295,27 @@ class Commands:
 
     try:
       with open(file_name) as f:
-        content = f.read()
+        content: str = f.read()
     except FileNotFoundError:
       print(f'Given file {file_name} cannot be found in {cur_dir}.')
       return Globals.exit_code
 
     print(content)
 
-  def kill(process: str) -> None:
-    if '.exe' in process:
-      process: str = process[:-4]
-
-    child = subprocess.Popen(['pgrep', '-f', process], stdout=subprocess.PIPE, shell=False)
-    response = child.communicate()[0]
-    PID_list = [int(pid) for pid in response.split()]
-
-    for PID in PID_list:
-      os.kill(PID, signal.SIGTERM)
-      print(f'Killed process: {PID}')
-    print(f'Killed all processes under the {process} parent process.')
-
+  # ----- Smaller Functions ----- #
 
   def touch(file_name: str) -> None:
     current_dir: str = os.getcwd().replace('\\', '/')
     with open(f'{current_dir}/{file_name}', 'x') as file:
       file.close()
+
+  def echo(message: list) -> None:
+    formatted_out: str = ' '.join(message)
+    print(formatted_out)
+
+  def user() -> None:
+    current_user: str = os.getlogin()
+    print(current_user)
 
   def clear() -> None:
     if 'linux' in Globals.platform:
@@ -297,10 +326,6 @@ class Commands:
   def pwd() -> None:
     current_dir: str = os.getcwd()
     print(current_dir)
-
-  def echo(message: list) -> None:
-    formatted_out: str = ' '.join(message)
-    print(formatted_out)
 
 
 Helper.command_loop()
