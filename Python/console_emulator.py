@@ -18,6 +18,9 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
+* Think about adding this file to shelly and maybe shelly can
+call to here to as like a sub part of it
+
 * Implement exceptions and remove all print statments for 
 errors (i am growing out of it need something that works)
 * Organize Commands class so commands
