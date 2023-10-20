@@ -34,7 +34,21 @@ def random_id() -> str:
   return str(''.join(id_list))
 
 
-def zip_file(target: str, archive_name: str, output_path: str = '') -> str:
+def zip_file(target: str, archive_name: str, output_path: str = '') -> str:  # Might make this name it self and return the ID
+  """
+  Zips either one file or one directory
+
+  Args:
+    target (str): The file or directory to compress
+    archive_name (str): The name of the .zip file
+    output_path (str, optional): The path to the .zip file. Defaults to ''.
+
+  Returns:
+    str: The path to the .zip file
+  """
+  if archive_name[-4:] == '.zip':
+    archive_name = archive_name[:-4]
+
   cur_dir = os.getcwd().replace('\\', '/')
   if output_path == '': output_path = cur_dir
   zip_path = f'{output_path}/{archive_name}'
@@ -53,13 +67,16 @@ def zip_file(target: str, archive_name: str, output_path: str = '') -> str:
   shutil.rmtree(dump_dir)
   return zip_file
 
-def unzip_file(file_path: str, out_path: str) -> str:
-  if '.zip' not in file_path:
-    file_path = file_path + '.zip'
+def unzip_file(file_path: str, out_dir: str) -> str:
+  # Have to make this work: https://www.geeksforgeeks.org/python-shutil-unpack_archive-method/
+  file_path = file_path.replace('\\', '/')
+  cur_dir = os.getcwd().replace('\\', '/')
+  #os.mkdir(file_path.split("/")[-1][:-4])
+  out_path = f'{cur_dir}/{file_path.split("/")[-1]}'
 
-  shutil.unpack_archive(file_path, 'zip', out_path)
-  return out_path
+  shutil.unpack_archive(filename=file_path, format='zip')
+  #return out_path
 
 
 
-zip_file('Coop-OS', 'out', 'Coop-OS')
+unzip_file('out.zip', 'out')
