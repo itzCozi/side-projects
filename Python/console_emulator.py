@@ -18,11 +18,6 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
-* Think about adding this file to shelly and maybe shelly can
-call to here to as like a sub part of it
-
-* Implement exceptions and remove all print statments for 
-errors (i am growing out of it need something that works)
 * Organize Commands class so commands
 without arguments are at the bottom
 * Add doc-strings
@@ -56,6 +51,11 @@ class Globals:
     "zip": 0x12,       # Zip a file in the current dir
     "info": 0x13,      # Displays info about the file
     "dir": 0x14,       # * Shows all items in a directory
+    "calc": 0x15,      # Simple calculator with eval function
+    "zip": 0x16,       # Zip a file with the zip format
+    "unzip": 0x17,     # Unzip a file with the zip format
+    "shutdown": 0x18,  # Shutdown system after a prompt
+    "###": 0x19,       # Comment simply pass when this is parsed
   }
 
 
