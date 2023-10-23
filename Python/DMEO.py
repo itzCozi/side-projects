@@ -1,6 +1,5 @@
 # Decentralized My Eyes Only
 
-
 import os
 import sys
 import random
@@ -83,3 +82,4 @@ def unzip_file(file_path: str) -> str:
 
 
 zip_file('Coop-OS')
+

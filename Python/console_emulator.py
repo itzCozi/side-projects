@@ -20,6 +20,7 @@ from colorama import Fore, Back, Style
 '''
 * Organize Commands class so commands
 without arguments are at the bottom
+* Add help command for all commands
 * Add doc-strings
 * COMPILE TO .EXE
 '''
@@ -42,7 +43,7 @@ class Globals:
     "cat": 0x9,        # * Prints the content of a file
     "kill": 0xA,       # * Kills a process by name
     "user": 0xB,       # * Prints the current user
-    "mov": 0xC,        # Moves a file or dir to a new path
+    "mov": 0xC,        # * Moves a file or dir to a new path
     "run": 0xD,        # Runs the given file
     "rename": 0xE,     # Renames the given file
     "sleep": 0xF,      # Sleep for a period of time
@@ -51,11 +52,12 @@ class Globals:
     "zip": 0x12,       # Zip a file in the current dir
     "info": 0x13,      # Displays info about the file
     "dir": 0x14,       # * Shows all items in a directory
-    "calc": 0x15,      # Simple calculator with eval function
-    "zip": 0x16,       # Zip a file with the zip format
-    "unzip": 0x17,     # Unzip a file with the zip format
-    "shutdown": 0x18,  # Shutdown system after a prompt
-    "###": 0x19,       # Comment simply pass when this is parsed
+    "help": 0x15,      # Displays all commands with args and desc
+    "calc": 0x16,      # Simple calculator with eval function
+    "zip": 0x17,       # Zip a file with the zip format
+    "unzip": 0x18,     # Unzip a file with the zip format
+    "shutdown": 0x19,  # Shutdown system after a prompt
+    "###": 0x20,       # Comment simply pass when this is parsed
   }
 
 
@@ -87,64 +89,78 @@ class Helper:
     # Handles calling the right command and sending arguments
     commands: list = list(Globals.command_map.keys())
     loop: bool = True
+    ticker: int = 0
 
     while loop is True:
       cur_dir: str = os.getcwd().replace('\\', '/')
-      cmd: str = input(f'{cur_dir} $ ')
+      if ticker == 0:
+        cmd: str = input(f'{Back.GREEN+Fore.BLACK}{cur_dir}{Style.RESET_ALL}\n$ ')
+      else:
+        cmd: str = input(f'\n{Back.GREEN+Fore.BLACK}{cur_dir}{Style.RESET_ALL}\n$ ')
       cmd_list: list = cmd.split(' ')
       keyword: str = cmd.split(' ')[0].lower()
+      ticker += 1
 
-      if keyword == '<sys>':  # Passes cmd directly to system
-        cmd_dupe: list = cmd_list.copy()
-        if 'ps' in cmd_dupe:
-          idx: int = cmd_dupe.index('ps')
-          cmd_dupe[idx]: str = 'powershell'
-        os.system(' '.join(cmd_dupe[1:]))
+      try:
+        if keyword == '<sys>':  # Passes cmd directly to system
+          cmd_dupe: list = cmd_list.copy()
+          if 'ps' in cmd_dupe:
+            idx: int = cmd_dupe.index('ps')
+            cmd_dupe[idx]: str = 'powershell'
+          os.system(' '.join(cmd_dupe[1:]))
 
-      elif keyword == commands[0]:
-        Commands.cd(cmd.split(' ')[1])
+        elif keyword == commands[0]:
+          Commands.cd(cmd.split(' ')[1])
 
-      elif keyword == commands[1]:
-        Commands.ls()
+        elif keyword == commands[1]:
+          Commands.ls()
 
-      elif keyword == commands[2]:
-        Commands.pwd()
+        elif keyword == commands[2]:
+          Commands.pwd()
 
-      elif keyword == commands[3]:
-        Commands.echo(cmd.split(' ')[1:])
+        elif keyword == commands[3]:
+          Commands.echo(cmd.split(' ')[1:])
 
-      elif keyword == commands[4] or keyword == 'cls':
-        Commands.clear()
+        elif keyword == commands[4] or keyword == 'cls':
+          Commands.clear()
 
-      elif keyword == commands[5]:
-        Commands.touch(cmd.split(' ')[1])
+        elif keyword == commands[5]:
+          Commands.touch(cmd.split(' ')[1])
 
-      elif keyword == commands[6]:
-        Commands.rm(cmd.split(' ')[1:])
+        elif keyword == commands[6]:
+          Commands.rm(cmd.split(' ')[1:])
 
-      elif keyword == commands[7]:
-        Commands.mkdir(cmd.split(' ')[1:])
+        elif keyword == commands[7]:
+          Commands.mkdir(cmd.split(' ')[1:])
 
-      elif keyword == commands[8]:
-        Commands.size(cmd.split(' ')[1:])
+        elif keyword == commands[8]:
+          Commands.size(cmd.split(' ')[1:])
 
-      elif keyword == commands[9]:
-        Commands.cat(cmd.split(' ')[1])
+        elif keyword == commands[9]:
+          Commands.cat(cmd.split(' ')[1])
 
-      elif keyword == commands[10]:
-        Commands.kill(cmd.split(' ')[1])
+        elif keyword == commands[10]:
+          Commands.kill(cmd.split(' ')[1])
 
-      elif keyword == commands[11]:
-        Commands.user()
+        elif keyword == commands[11]:
+          Commands.user()
 
-      elif keyword == commands[20]:
-        if len(cmd_list) > 1:
-          Commands.dir(cmd.split(' ')[1])
+        elif keyword == commands[12]:
+          Commands.mov(cmd.split(' ')[1], cmd.split(' ')[2])
+
+        elif keyword == commands[20]:
+          if len(cmd_list) > 1:
+            Commands.dir(cmd.split(' ')[1])
+          else:
+            Commands.dir()
+
         else:
-          Commands.dir()
+          print(f'Given command {cmd} is invalid.')
 
-      else:
-        print(f'Given command {cmd} is invalid.')
+      except IndexError:
+        print(f'Given command {cmd} requires an argument.')
+      except Exception as e:
+        print(f'Unknown exception occurred: \n{e}\n')
 
 
 class Commands:
@@ -316,6 +332,18 @@ class Commands:
     print(content)
 
   # ----- Smaller Functions ----- #
+
+  @staticmethod
+  def mov(source_path: str, destination_path: str) -> None:
+    source_path: str = source_path.replace('\\', '/')
+
+    if os.path.exists(source_path):
+      if os.path.isfile(source_path):
+        shutil.copyfile(source_path, destination_path)
+      elif os.path.isdir(source_path):
+        shutil.copytree(source_path, destination_path)
+    else:
+      print(f'File: {source_path} doesnt exist')
 
   @staticmethod
   def touch(file_name: str) -> None:
