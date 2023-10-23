@@ -10,7 +10,7 @@ from colorama import Fore, Back, Style
 # CODE
 '''
 * All variable declarations must be type hinted EX: num: int = 0
-* All paths use '/' to separate dies instead of '\' like windows
+* All paths use '/' to separate dirs instead of '\' like windows
 * If a function has parameters each variable must have specified types
 * All functions and classes use camelCase and variables use snake_case
 * Functions without 'self' parameter in a class must have the @staticmethod tag
