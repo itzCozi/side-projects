@@ -1,6 +1,7 @@
 # Emulates the windows terminal and cmd
 import os
 import sys
+import time
 import signal
 import shutil
 import subprocess
@@ -20,6 +21,7 @@ from colorama import Fore, Back, Style
 '''
 * Organize Commands class so commands
 without arguments are at the bottom
+* Add getname and getpid commands
 * Add help command for all commands
 * Add doc-strings
 * COMPILE TO .EXE
@@ -31,7 +33,6 @@ class Globals:
   platform: str = sys.platform
   invaild_char_list: list = list('/\\:*?"<>|')
   help_message: str = '''
-  
   '''
   command_map: dict = {
     "cd": 0x0,         # * Change current directory
@@ -48,8 +49,8 @@ class Globals:
     "user": 0xB,       # * Prints the current user
     "mov": 0xC,        # * Moves a file or dir to a new path
     "run": 0xD,        # * Runs the given file
-    "rename": 0xE,     # Renames the given file
-    "sleep": 0xF,      # Sleep for a period of time
+    "rename": 0xE,     # * Renames the given file
+    "sleep": 0xF,      # * Sleep for a period of time
     "sum": 0x10,       # Print checksum of file
     "uptime": 0x11,    # Prints the uptime
     "zip": 0x12,       # Zip a file in the current dir
@@ -153,6 +154,12 @@ class Helper:
 
         elif keyword == commands[13]:
           Commands.run(cmd.split(' ')[1])
+
+        elif keyword == commands[14]:
+          Commands.rename(cmd.split(' ')[1], cmd.split(' ')[2])
+
+        elif keyword == commands[15]:
+          Commands.sleep(cmd.split(' ')[1])
 
         elif keyword == commands[20]:
           if len(cmd_list) > 1:
@@ -355,6 +362,25 @@ class Commands:
       return Globals.exit_code
 
   # ----- Smaller Functions ----- #
+
+  @staticmethod
+  def sleep(duration: int) -> None:
+    if isinstance(duration, int):
+      time.sleep(duration)
+    else:
+      print(f'Given variable duration is not a integer.')
+      return Globals.exit_code
+
+  @staticmethod
+  def rename(target_file: str, new_name: str) -> None:
+    target_file: str = target_file.replace('\\', '/')
+    new_name: str = f'{"".join(target_file.split("/")[:-1])}/{new_name}'
+
+    if os.path.exists(target_file):
+      os.rename(target_file, new_name)
+    else:
+      print(f'File: {target_file} doesnt exist.')
+      return Globals.exit_code
 
   @staticmethod
   def run(file_path: str) -> None:
