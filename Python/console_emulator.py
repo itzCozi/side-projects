@@ -30,6 +30,9 @@ class Globals:
   exit_code: None = None
   platform: str = sys.platform
   invaild_char_list: list = list('/\\:*?"<>|')
+  help_message: str = '''
+  
+  '''
   command_map: dict = {
     "cd": 0x0,         # * Change current directory
     "ls": 0x1,         # * Display all files and dirs
@@ -44,7 +47,7 @@ class Globals:
     "kill": 0xA,       # * Kills a process by name
     "user": 0xB,       # * Prints the current user
     "mov": 0xC,        # * Moves a file or dir to a new path
-    "run": 0xD,        # Runs the given file
+    "run": 0xD,        # * Runs the given file
     "rename": 0xE,     # Renames the given file
     "sleep": 0xF,      # Sleep for a period of time
     "sum": 0x10,       # Print checksum of file
@@ -147,6 +150,9 @@ class Helper:
 
         elif keyword == commands[12]:
           Commands.mov(cmd.split(' ')[1], cmd.split(' ')[2])
+
+        elif keyword == commands[13]:
+          Commands.run(cmd.split(' ')[1])
 
         elif keyword == commands[20]:
           if len(cmd_list) > 1:
@@ -331,11 +337,13 @@ class Commands:
 
     print(content)
 
-  # ----- Smaller Functions ----- #
-
   @staticmethod
   def mov(source_path: str, destination_path: str) -> None:
     source_path: str = source_path.replace('\\', '/')
+
+    if os.path.exists(destination_path):
+      print(f'Destination: {destination_path} already exists.')
+      return Globals.exit_code
 
     if os.path.exists(source_path):
       if os.path.isfile(source_path):
@@ -343,7 +351,21 @@ class Commands:
       elif os.path.isdir(source_path):
         shutil.copytree(source_path, destination_path)
     else:
-      print(f'File: {source_path} doesnt exist')
+      print(f'File: {source_path} doesnt exist.')
+      return Globals.exit_code
+
+  # ----- Smaller Functions ----- #
+
+  @staticmethod
+  def run(file_path: str) -> None:
+    if os.path.exists(file_path):
+      if 'linux' in Globals.platform:
+        os.system(f'./{file_path}')
+      else:
+        os.startfile(file_path)
+    else:
+      print(f'File: {file_path} doesnt exist.')
+      return Globals.exit_code
 
   @staticmethod
   def touch(file_name: str) -> None:
