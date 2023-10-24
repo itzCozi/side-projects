@@ -27,8 +27,8 @@ from colorama import Fore, Back, Style
 # TODO
 '''
 https://stackoverflow.com/questions/11352855/communication-between-two-computers-using-python-socket
-* Think about adding a history system like windows
-* Add ; to send multiple commands
+* Add ; to send multiple commands EX: touch test.txt ; rm test.txt
+ask ChatGPT I have no clue and i want to use best practices sooo...
 * Add help command for all commands
 * COMPILE TO .EXE
 '''
@@ -175,7 +175,9 @@ class Helper:
           case 'calc':
             Commands.calc(cmd.split(' ')[1])
 
-          case _:  # Equivalent to an 'else' statement
+          # ----- Blank Input and Wildcard ----- #
+          case '': pass
+          case _:  # An 'else' statement
             print(f'Given command: "{cmd}" is invalid.')
 
       except IndexError:
