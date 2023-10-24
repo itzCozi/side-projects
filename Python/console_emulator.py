@@ -26,17 +26,16 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
-* Replace os.system with subprocess calls
 * Think about adding a history system like windows
 * Add ; to send multiple commands
 * Add help command for all commands
-* Add doc-strings
 * COMPILE TO .EXE
 '''
 
 
 class Globals:
   exit_code: None = None
+  question_ticker: int = 0
   platform: str = sys.platform
   invaild_char_list: list = list('/\\:*?"<>|')
   help_message: str = ''''''  # Needs to be added lmao
@@ -78,20 +77,21 @@ class Helper:
 
   @staticmethod
   def shell_initialize() -> None:
-    # Handles calling the right command and sending arguments
+    """
+    Handles calling the right command and sending arguments
+    """
     commands: list = list(Globals.command_map.keys())
     loop: bool = True
-    ticker: int = 0
 
     while loop is True:
       cur_dir: str = os.getcwd().replace('\\', '/')
-      if ticker == 0:
+      if Globals.question_ticker == 0:
         cmd: str = input(f'{Back.GREEN + Fore.BLACK}{cur_dir}{Style.RESET_ALL}\n$ ')
       else:
         cmd: str = input(f'\n{Back.GREEN + Fore.BLACK}{cur_dir}{Style.RESET_ALL}\n$ ')
       cmd_list: list = cmd.split(' ')
       keyword: str = cmd.split(' ')[0].lower()
-      ticker += 1
+      Globals.question_ticker += 1
 
       try:
         # Suggested by Sam Perlmutter (FRC Team: 3506)
@@ -103,7 +103,7 @@ class Helper:
             if 'ps' in cmd_dupe:
               idx: int = cmd_dupe.index('ps')
               cmd_dupe[idx]: str = 'powershell'
-            os.system(' '.join(cmd_dupe[1:]))
+            subprocess.call(' '.join(cmd_dupe[1:]), shell=True)
 
           case 'cd':
             Commands.cd(cmd.split(' ')[1])
@@ -184,6 +184,15 @@ class Helper:
 
   @staticmethod
   def get_name(pid: int) -> str:
+    """
+    Return the name from the PID
+
+    Args:
+      pid (int): The target processes ID
+
+    Returns:
+      str: The name of the process
+    """
     if 'linux' in Globals.platform:
       process_name: str = os.popen(f'ps -p {pid} -o comm=').read()
     else:
@@ -201,7 +210,15 @@ class Helper:
 
   @staticmethod
   def get_PID(process: str) -> list:
-    # Returns a process PID from name
+    """
+    Returns a process PID from name
+
+    Args:
+      process (str): The processes name
+
+    Returns:
+      list: A list of all child processes PIDs
+    """
     if 'linux' in Globals.platform:
       child: subprocess.Popen = subprocess.Popen(
         ['pgrep', '-f', process],
@@ -232,6 +249,12 @@ class Commands:
 
   @staticmethod
   def cd(path: str) -> None:
+    """
+    Change directory to path
+
+    Args:
+      path (str): The path to cd to
+    """
     path: str = path.replace('\\', '/')
 
     if 'linux' in Globals.platform:
@@ -262,6 +285,9 @@ class Commands:
 
   @staticmethod
   def ls() -> None:
+    """
+    List all items in the current directory
+    """
     directory: str = os.getcwd().replace('\\', '/')
     dir_items: list = os.listdir(directory)
     ticker: int = 0
@@ -282,6 +308,12 @@ class Commands:
 
   @staticmethod
   def rm(file_list: list) -> None:
+    """
+    Remove / delete all files in a list
+
+    Args:
+      file_list (list): A list made by shell_init()
+    """
     for file in file_list:
       del_question: str = f'Are you sure you want to delete {file}? (y/n): '
 
@@ -311,6 +343,12 @@ class Commands:
 
   @staticmethod
   def mkdir(dir_name_list: list) -> None:
+    """
+    Create a directory or directories
+
+    Args:
+      dir_name_list (list): A list of all dirs to make
+    """
     cur_dir: str = os.getcwd().replace('\\', '/')
     for directory in dir_name_list:
       for char in directory:
@@ -323,6 +361,12 @@ class Commands:
 
   @staticmethod
   def size(file_name_list: list) -> None:
+    """
+    Print the size of the files / directories given
+
+    Args:
+      file_name_list (list): A list of all file names to get size of
+    """
     for file in file_name_list:
       current_dir: str = os.getcwd().replace('\\', '/')
       file_path: str = f'{current_dir}/{file}'
@@ -353,6 +397,12 @@ class Commands:
 
   @staticmethod
   def dir(directory: str = '') -> None:
+    """
+    Print all files and folders in current dir or a specified path
+
+    Args:
+      directory (str): An optional directory if not using current
+    """
     ticker: int = 0
     if directory == '':
       directory: str = os.getcwd()
@@ -380,6 +430,12 @@ class Commands:
 
   @staticmethod
   def kill(process: str) -> None:
+    """
+    Kills a process
+
+    Args:
+      process (str): The target processes name
+    """
     if '.exe' in process:
       process: str = process[:-4]
     pid_list: list = Helper.get_PID(process)
@@ -393,6 +449,12 @@ class Commands:
 
   @staticmethod
   def cat(file_name: str) -> None:
+    """
+    Output the contents of a file to the console
+
+    Args:
+      file_name (str): The name of the file to print
+    """
     file_name: str = file_name.replace('\\', '/')
     cur_dir: str = os.getcwd().replace('\\', '/')
 
@@ -407,6 +469,13 @@ class Commands:
 
   @staticmethod
   def mov(source_path: str, destination_path: str) -> None:
+    """
+    Moves a file or directory to a new location
+
+    Args:
+      source_path (str): The file to be moved
+      destination_path (str): Where to output the file
+    """
     source_path: str = source_path.replace('\\', '/')
 
     if os.path.exists(destination_path):
@@ -424,6 +493,9 @@ class Commands:
 
   @staticmethod
   def uptime() -> None:
+    """
+    Prints uptime on windows
+    """
     if 'linux' in Globals.platform:
       print('The \'uptime\' command is not supported on linux')
       return Globals.exit_code
@@ -437,8 +509,14 @@ class Commands:
     print(f'{days} days, {hour:02}:{mins:02}')
 
   @staticmethod
-  def sum(file: str) -> None:
-    file: str = file.replace('\\', '/')
+  def sum(file_name: str) -> None:
+    """
+    Outputs the check sum of a file
+
+    Args:
+      file_name (str): The target files name
+    """
+    file: str = file_name.replace('\\', '/')
     obj = hashlib.sha1()  # Weird type
 
     with open(file, 'rb') as Fin:
@@ -452,6 +530,9 @@ class Commands:
 
   @staticmethod
   def time() -> None:
+    """
+    Prints the current time
+    """
     if 'linux' in Globals.platform:
       current_time: str = os.popen("date +%I:%M' '%p").read().replace('\n', '')
     else:
@@ -460,6 +541,9 @@ class Commands:
 
   @staticmethod
   def date() -> None:
+    """
+    Prints the current date
+    """
     if 'linux' in Globals.platform:
       date: str = os.popen("date +%m/%d/%Y").read().replace('\n', '')
     else:
@@ -468,6 +552,12 @@ class Commands:
 
   @staticmethod
   def sleep(duration: str) -> None:
+    """
+    Sleep / stall for a peroid of time
+
+    Args:
+      duration (str): The duration of seconds to wait
+    """
     if duration.isdigit():
       for i in reversed(range(1, int(duration) + 1)):
         if i == int(duration):
@@ -483,6 +573,12 @@ class Commands:
 
   @staticmethod
   def calc(expression: str) -> None:
+    """
+    A simple calculator
+
+    Args:
+      expression (str): A math operation EX: (4+4)
+    """
     try:
       print(eval(expression))
     except Exception as e:
@@ -491,6 +587,13 @@ class Commands:
 
   @staticmethod
   def rename(target_file: str, new_name: str) -> None:
+    """
+    Renames the target file to a new name
+
+    Args:
+      target_file (str): The file to be renamed
+      new_name (str): What to rename to target to
+    """
     target_file: str = target_file.replace('\\', '/')
     new_name: str = f'{"".join(target_file.split("/")[:-1])}/{new_name}'
 
@@ -502,9 +605,15 @@ class Commands:
 
   @staticmethod
   def run(file_path: str) -> None:
+    """
+    Execute a given file
+
+    Args:
+      file_path (str): The path to the target file
+    """
     if os.path.exists(file_path):
       if 'linux' in Globals.platform:
-        os.system(f'./{file_path}')
+        subprocess.call(f'./{file_path}', shell=True)
       else:
         os.startfile(file_path)
     else:
@@ -513,29 +622,51 @@ class Commands:
 
   @staticmethod
   def touch(file_name: str) -> None:
+    """
+    Create a new file
+
+    Args:
+      file_name (str): What to name to new file / where to put it
+    """
     current_dir: str = os.getcwd().replace('\\', '/')
     with open(f'{current_dir}/{file_name}', 'x') as file:
       file.close()
 
   @staticmethod
   def echo(message: list) -> None:
+    """
+    Print a message
+
+    Args:
+      message (list): A list of user input split by spaces
+    """
     formatted_out: str = ' '.join(message)
     print(formatted_out)
 
   @staticmethod
   def user() -> None:
+    """
+    Prints current user
+    """
     current_user: str = os.getlogin()
     print(current_user)
 
   @staticmethod
   def clear() -> None:
+    """
+    Clears the console
+    """
+    Globals.question_ticker: int = 0
     if 'linux' in Globals.platform:
-      os.system('clear')
+      subprocess.call('clear', shell=True)
     else:
-      os.system('cls')
+      subprocess.call('cls', shell=True)
 
   @staticmethod
   def pwd() -> None:
+    """
+    Print the current working directory
+    """
     current_dir: str = os.getcwd()
     print(current_dir)
 
