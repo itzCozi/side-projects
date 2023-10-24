@@ -21,6 +21,7 @@ from colorama import Fore, Back, Style
 * Whenever in a formatted string use double quotes and then single quotes to end
 * References to variables must be in double quotes EX: (var: "5" is not a number)
 * If a variable or function uses more than one type use EX: num: int | float = 0.1
+* When outputting a message like info or an error end the print statement with a period
 '''
 
 # TODO
@@ -284,25 +285,29 @@ class Commands:
     for file in file_list:
       del_question: str = f'Are you sure you want to delete {file}? (y/n): '
 
-      if os.path.isfile(file):
-        if os.path.getsize(file) < 375:  # Less than 3 kilobytes
-          os.remove(file)
-        else:
-          usr_input: str = input(del_question).lower()
-          if usr_input == 'yes' or usr_input == 'y':
+      if os.path.exists(file):
+        if os.path.isfile(file):
+          if os.path.getsize(file) < 375:  # Less than 3 kilobytes
             os.remove(file)
           else:
-            return Globals.exit_code
+            usr_input: str = input(del_question).lower()
+            if usr_input == 'yes' or usr_input == 'y':
+              os.remove(file)
+            else:
+              return Globals.exit_code
 
-      elif os.path.isdir(file):
-        if os.path.getsize(file) < 375:  # Less than 3 kilobytes
-          shutil.rmtree(file)
-        else:
-          usr_input: str = input(del_question).lower()
-          if usr_input == 'yes' or usr_input == 'y':
-            os.remove(file)
+        elif os.path.isdir(file):
+          if os.path.getsize(file) < 375:  # Less than 3 kilobytes
+            shutil.rmtree(file)
           else:
-            return Globals.exit_code
+            usr_input: str = input(del_question).lower()
+            if usr_input == 'yes' or usr_input == 'y':
+              os.remove(file)
+            else:
+              return Globals.exit_code
+      else:
+        print(f'Cannot find given file: "{file}".')
+        return Globals.exit_code
 
   @staticmethod
   def mkdir(dir_name_list: list) -> None:
@@ -395,7 +400,7 @@ class Commands:
       with open(file_name) as f:
         content: str = f.read()
     except FileNotFoundError:
-      print(f'Given file "{file_name}" cannot be found in {cur_dir}.')
+      print(f'Given file: "{file_name}" cannot be found in "{cur_dir}".')
       return Globals.exit_code
 
     print(content)
