@@ -1,9 +1,12 @@
-# Emulates the windows terminal and cmd
+# Emulates the Windows terminal and cmd
+
 import os
 import sys
 import time
+import ctypes
 import signal
 import shutil
+import hashlib
 import subprocess
 from colorama import Fore, Back, Style
 
@@ -13,15 +16,18 @@ from colorama import Fore, Back, Style
 * All paths use '/' to separate dirs instead of '\' like windows
 * If a function has parameters each variable must have specified types
 * All functions and classes use camelCase and variables use snake_case
+* When assigning parameters in functions dont use spaces between equals sign
 * Functions without 'self' parameter in a class must have the @staticmethod tag
+* Whenever in a formatted string use double quotes and then single quotes to end
+* References to variables must be in double quotes EX: (var: "5" is not a number)
 * If a variable or function uses more than one type use EX: num: int | float = 0.1
 '''
 
 # TODO
 '''
-* Organize Commands class so commands
-without arguments are at the bottom
-* Add getname and getpid commands
+* Replace os.system with subprocess calls
+* Think about adding a history system like windows
+* Add ; to send multiple commands
 * Add help command for all commands
 * Add doc-strings
 * COMPILE TO .EXE
@@ -32,61 +38,42 @@ class Globals:
   exit_code: None = None
   platform: str = sys.platform
   invaild_char_list: list = list('/\\:*?"<>|')
-  help_message: str = '''
-  '''
+  help_message: str = ''''''  # Needs to be added lmao
+  # I know this is ugly but its so readable it should 
+  # be a PEP8 standard for maps over like 20 items long
   command_map: dict = {
-    "cd": 0x0,         # * Change current directory
-    "ls": 0x1,         # * Display all files and dirs
-    "pwd": 0x2,        # * Print the current path
-    "echo": 0x3,       # * Print a string
-    "clear": 0x4,      # * Clear the console
-    "touch": 0x5,      # * Create a new file
-    "rm": 0x6,         # * Remove or delete a file
-    "mkdir": 0x7,      # * Create a new directory
-    "size": 0x8,       # * Prints the size of a file or dir
-    "cat": 0x9,        # * Prints the content of a file
-    "kill": 0xA,       # * Kills a process by name
-    "user": 0xB,       # * Prints the current user
-    "mov": 0xC,        # * Moves a file or dir to a new path
-    "run": 0xD,        # * Runs the given file
-    "rename": 0xE,     # * Renames the given file
-    "sleep": 0xF,      # * Sleep for a period of time
-    "sum": 0x10,       # Print checksum of file
-    "uptime": 0x11,    # Prints the uptime
-    "zip": 0x12,       # Zip a file in the current dir
-    "info": 0x13,      # Displays info about the file
-    "dir": 0x14,       # * Shows all items in a directory
-    "help": 0x15,      # Displays all commands with args and desc
-    "calc": 0x16,      # Simple calculator with eval function
-    "zip": 0x17,       # Zip a file with the zip format
-    "unzip": 0x18,     # Unzip a file with the zip format
-    "shutdown": 0x19,  # Shutdown system after a prompt
-    "###": 0x20,       # Comment simply pass when this is parsed
+    "cd":             0,              # * Change current directory
+    "ls":             1,              # * Display all files and dirs
+    "pwd":            2,              # * Print the current path
+    "echo":           3,              # * Print a string
+    "clear":          4,              # * Clear the console
+    "touch":          5,              # * Create a new file
+    "rm":             6,              # * Remove or delete a file
+    "mkdir":          7,              # * Create a new directory
+    "size":           8,              # * Prints the size of a file or dir
+    "cat":            9,              # * Prints the content of a file
+    "kill":           10,             # * Kills a process by name
+    "user":           11,             # * Prints the current user
+    "mov":            12,             # * Moves a file or dir to a new path
+    "run":            13,             # * Runs the given file
+    "rename":         14,             # * Renames the given file
+    "sleep":          15,             # * Sleep for a period of time
+    "sum":            16,             # * Print checksum of file
+    "uptime":         17,             # * Prints the uptime
+    "date":           18,             # * Prints the current date
+    "time":           19,             # * Prints the current time
+    "info":           20,             # Displays info about the file
+    "dir":            21,             # * Shows all items in a directory
+    "help":           22,             # Displays all commands with args and desc
+    "calc":           23,             # * Simple calculator with eval function
+    "zip":            24,             # Zip a file with the zip format
+    "unzip":          25,             # Unzip a file with the zip format
+    "shutdown":       26,             # Shutdown system after a prompt
+    "###":            27,             # Comment simply pass when this is parsed
   }
 
 
 class Helper:
-
-  @staticmethod
-  def get_PID(process: str) -> list:
-    # Returns a process PID from name
-    if 'linux' in Globals.platform:
-      child: subprocess.Popen = subprocess.Popen(['pgrep', '-f', process], stdout=subprocess.PIPE, shell=False)
-      response: bytes = child.communicate()[0]
-      print(type(child), type(response))
-      return [int(pid) for pid in response.split()]
-
-    else:  # Windows way
-      retlist: list = []
-      output: str = os.popen(f'powershell Get-Process -Name {process}').read()
-      for line in output.splitlines():
-        if '  SI' in line:
-          index: int = line.find('  SI')
-        if '.' in line:
-          difference: str = line[:index]
-          proc_info: str = difference.split()[-1].replace(' ', '')
-          retlist.append(proc_info)
-      return retlist
 
   @staticmethod
   def shell_initialize() -> None:
@@ -98,9 +85,9 @@ class Helper:
     while loop is True:
       cur_dir: str = os.getcwd().replace('\\', '/')
       if ticker == 0:
-        cmd: str = input(f'{Back.GREEN+Fore.BLACK}{cur_dir}{Style.RESET_ALL}\n$ ')
+        cmd: str = input(f'{Back.GREEN + Fore.BLACK}{cur_dir}{Style.RESET_ALL}\n$ ')
       else:
-        cmd: str = input(f'\n{Back.GREEN+Fore.BLACK}{cur_dir}{Style.RESET_ALL}\n$ ')
+        cmd: str = input(f'\n{Back.GREEN + Fore.BLACK}{cur_dir}{Style.RESET_ALL}\n$ ')
       cmd_list: list = cmd.split(' ')
       keyword: str = cmd.split(' ')[0].lower()
       ticker += 1
@@ -161,19 +148,79 @@ class Helper:
         elif keyword == commands[15]:
           Commands.sleep(cmd.split(' ')[1])
 
-        elif keyword == commands[20]:
+        elif keyword == commands[16]:
+          Commands.sum(cmd.split(' ')[1])
+
+        elif keyword == commands[17]:
+          Commands.uptime()
+
+        elif keyword == commands[18]:
+          Commands.date()
+
+        elif keyword == commands[19]:
+          Commands.time()
+
+        elif keyword == commands[21]:
           if len(cmd_list) > 1:
             Commands.dir(cmd.split(' ')[1])
           else:
             Commands.dir()
 
+        elif keyword == commands[23]:
+          Commands.calc(cmd.split(' ')[1])
+
         else:
-          print(f'Given command {cmd} is invalid.')
+          print(f'Given command: "{cmd}" is invalid.')
 
       except IndexError:
-        print(f'Given command {cmd} requires an argument.')
+        print(f'Given command: "{cmd}" requires an argument.')
       except Exception as e:
         print(f'Unknown exception occurred: \n{e}\n')
+
+  @staticmethod
+  def get_name(pid: int) -> str:
+    if 'linux' in Globals.platform:
+      process_name: str = os.popen(f'ps -p {pid} -o comm=').read()
+    else:
+      out: str = os.popen(f'tasklist /fi "pid eq {pid}"').read()
+      out_list: list = out.splitlines()
+      for line in out_list:
+        if '.exe' in line:
+          idx: int = line.find('.')
+          process_name: str = line[:idx + 4]
+    if 'process_name' in locals():
+      return process_name
+    else:
+      print(f'Given process ID: "{pid}" is not assigned to an active process')
+      return Globals.exit_code
+
+  @staticmethod
+  def get_PID(process: str) -> list:
+    # Returns a process PID from name
+    if 'linux' in Globals.platform:
+      child: subprocess.Popen = subprocess.Popen(
+        ['pgrep', '-f', process],
+        stdout=subprocess.PIPE,
+        shell=False
+      )
+      response: bytes = child.communicate()[0]
+      return [int(pid) for pid in response.split()]
+
+    else:  # Windows way
+      ret_list: list = []
+      output: str = os.popen(f'powershell Get-Process -Name {process}').read()
+      for line in output.splitlines():
+        if '  SI' in line:
+          index: int = line.find('  SI')
+        if '.' in line:
+          if 'index' in locals():
+            difference: str = line[:index]
+            proc_info: str = difference.split()[-1].replace(' ', '')
+            ret_list.append(proc_info)
+          else:
+            print(f'Given process: "{process}" is not active.')
+            return Globals.exit_code
+      return ret_list
 
 
 class Commands:
@@ -210,8 +257,8 @@ class Commands:
 
   @staticmethod
   def ls() -> None:
-    dir: str = os.getcwd().replace('\\', '/')
-    dir_items: list = os.listdir(dir)
+    directory: str = os.getcwd().replace('\\', '/')
+    dir_items: list = os.listdir(directory)
     ticker: int = 0
     print('---------------------------------------------')
     for file in dir_items:
@@ -256,14 +303,14 @@ class Commands:
   @staticmethod
   def mkdir(dir_name_list: list) -> None:
     cur_dir: str = os.getcwd().replace('\\', '/')
-    for dir in dir_name_list:
-      for char in dir:
+    for directory in dir_name_list:
+      for char in directory:
         if char in Globals.invaild_char_list:
-          print(f'There is an invaild character in {dir}.')
+          print(f'There is an invaild character in "{directory}".')
           return Globals.exit_code
         else:
           continue
-      os.mkdir(f'{cur_dir}/{dir}')
+      os.mkdir(f'{cur_dir}/{directory}')
 
   @staticmethod
   def size(file_name_list: list) -> None:
@@ -300,6 +347,9 @@ class Commands:
     ticker: int = 0
     if directory == '':
       directory: str = os.getcwd()
+    if len(os.listdir(directory)) == 0:
+      print(f'The current directory: "{directory}" is empty.')
+      return Globals.exit_code
     directory: str = directory.replace('\\', '/')
 
     for item in os.listdir(directory):
@@ -323,12 +373,14 @@ class Commands:
   def kill(process: str) -> None:
     if '.exe' in process:
       process: str = process[:-4]
-    PID_list: list = Helper.get_PID(process)
+    pid_list: list = Helper.get_PID(process)
+    if pid_list is None:
+      return Globals.exit_code
 
-    for PID in PID_list:
+    for PID in pid_list:
       os.kill(int(PID), signal.SIGTERM)
-      print(f'Killed process: {PID}')
-    print(f'Killed all processes under the {process} parent process.')
+      print(f'Killed process: "{PID}"')
+    print(f'Killed all processes under the "{process}" parent process.')
 
   @staticmethod
   def cat(file_name: str) -> None:
@@ -339,7 +391,7 @@ class Commands:
       with open(file_name) as f:
         content: str = f.read()
     except FileNotFoundError:
-      print(f'Given file {file_name} cannot be found in {cur_dir}.')
+      print(f'Given file "{file_name}" cannot be found in {cur_dir}.')
       return Globals.exit_code
 
     print(content)
@@ -349,7 +401,7 @@ class Commands:
     source_path: str = source_path.replace('\\', '/')
 
     if os.path.exists(destination_path):
-      print(f'Destination: {destination_path} already exists.')
+      print(f'Destination "{destination_path}" already exists.')
       return Globals.exit_code
 
     if os.path.exists(source_path):
@@ -358,17 +410,74 @@ class Commands:
       elif os.path.isdir(source_path):
         shutil.copytree(source_path, destination_path)
     else:
-      print(f'File: {source_path} doesnt exist.')
+      print(f'File: "{source_path}" doesnt exist.')
       return Globals.exit_code
+
+  @staticmethod
+  def uptime() -> None:
+    if 'linux' in Globals.platform:
+      print('The \'uptime\' command is not supported on linux')
+      return Globals.exit_code
+    lib: ctypes.WinDLL = ctypes.windll.kernel32
+    t: int = lib.GetTickCount64()
+    t: int = int(str(t)[:-3])
+    # Cant type hint tuples so theses are standard
+    mins, sec = divmod(t, 60)
+    hour, mins = divmod(mins, 60)
+    days, hour = divmod(hour, 24)
+    print(f'{days} days, {hour:02}:{mins:02}')
+
+  @staticmethod
+  def sum(file: str) -> None:
+    file: str = file.replace('\\', '/')
+    obj = hashlib.sha1()  # Weird type
+
+    with open(file, 'rb') as Fin:
+      chunk: bytes = 0
+      while chunk != b'':
+        chunk: bytes = Fin.read(1024)
+        obj.update(chunk)
+    print(f'{file.split("/")[-1]} hash: {obj.hexdigest()}')
 
   # ----- Smaller Functions ----- #
 
   @staticmethod
-  def sleep(duration: int) -> None:
-    if isinstance(duration, int):
-      time.sleep(duration)
+  def time() -> None:
+    if 'linux' in Globals.platform:
+      current_time: str = os.popen("date +%I:%M' '%p").read().replace('\n', '')
     else:
-      print(f'Given variable duration is not a integer.')
+      current_time: str = os.popen('time /t').read().replace('\n', '')
+    print(current_time)
+
+  @staticmethod
+  def date() -> None:
+    if 'linux' in Globals.platform:
+      date: str = os.popen("date +%m/%d/%Y").read().replace('\n', '')
+    else:
+      date: str = os.popen('date /t').read().replace('\n', '')
+    print(date)
+
+  @staticmethod
+  def sleep(duration: str) -> None:
+    if duration.isdigit():
+      for i in reversed(range(1, int(duration) + 1)):
+        if i == int(duration):
+          print(f'Sleeping for {i} seconds...\r', end='')
+        elif i == 1:
+          print(f'Sleeping for {i} more second...\n\r', end='')
+        else:
+          print(f'Sleeping for {i} more seconds...\r', end='')
+        time.sleep(1)
+    else:
+      print('Given variable: "duration" is not a integer.')
+      return Globals.exit_code
+
+  @staticmethod
+  def calc(expression: str) -> None:
+    try:
+      print(eval(expression))
+    except Exception as e:
+      print(f'Expression: "{expression}" is not a valid math operation.\n{e}\n')
       return Globals.exit_code
 
   @staticmethod
@@ -379,7 +488,7 @@ class Commands:
     if os.path.exists(target_file):
       os.rename(target_file, new_name)
     else:
-      print(f'File: {target_file} doesnt exist.')
+      print(f'File: "{target_file}" doesnt exist.')
       return Globals.exit_code
 
   @staticmethod
@@ -390,7 +499,7 @@ class Commands:
       else:
         os.startfile(file_path)
     else:
-      print(f'File: {file_path} doesnt exist.')
+      print(f'File: "{file_path}" doesnt exist.')
       return Globals.exit_code
 
   @staticmethod
