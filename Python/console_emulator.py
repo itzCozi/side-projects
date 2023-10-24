@@ -26,6 +26,7 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
+https://stackoverflow.com/questions/11352855/communication-between-two-computers-using-python-socket
 * Think about adding a history system like windows
 * Add ; to send multiple commands
 * Add help command for all commands
