@@ -93,84 +93,88 @@ class Helper:
       ticker += 1
 
       try:
-        if keyword == '<sys>':  # Passes cmd directly to system
-          cmd_dupe: list = cmd_list.copy()
-          if 'ps' in cmd_dupe:
-            idx: int = cmd_dupe.index('ps')
-            cmd_dupe[idx]: str = 'powershell'
-          os.system(' '.join(cmd_dupe[1:]))
+        # Suggested by Sam Perlmutter (FRC Team: 3506)
+        # Didnt know switch cases existed in Python 
+        # until he made fun of my spaghetti code
+        match keyword:
+          case '<sys>':  # Passes cmd directly to system
+            cmd_dupe: list = cmd_list.copy()
+            if 'ps' in cmd_dupe:
+              idx: int = cmd_dupe.index('ps')
+              cmd_dupe[idx]: str = 'powershell'
+            os.system(' '.join(cmd_dupe[1:]))
 
-        elif keyword == commands[0]:
-          Commands.cd(cmd.split(' ')[1])
+          case 'cd':
+            Commands.cd(cmd.split(' ')[1])
 
-        elif keyword == commands[1]:
-          Commands.ls()
+          case 'ls':
+            Commands.ls()
 
-        elif keyword == commands[2]:
-          Commands.pwd()
+          case 'pwd':
+            Commands.pwd()
 
-        elif keyword == commands[3]:
-          Commands.echo(cmd.split(' ')[1:])
+          case 'echo':
+            Commands.echo(cmd.split(' ')[1:])
 
-        elif keyword == commands[4] or keyword == 'cls':
-          Commands.clear()
+          case 'clear':
+            Commands.clear()
 
-        elif keyword == commands[5]:
-          Commands.touch(cmd.split(' ')[1])
+          case 'touch':
+            Commands.touch(cmd.split(' ')[1])
 
-        elif keyword == commands[6]:
-          Commands.rm(cmd.split(' ')[1:])
+          case 'rm':
+            Commands.rm(cmd.split(' ')[1:])
 
-        elif keyword == commands[7]:
-          Commands.mkdir(cmd.split(' ')[1:])
+          case 'mkdir':
+            Commands.mkdir(cmd.split(' ')[1:])
 
-        elif keyword == commands[8]:
-          Commands.size(cmd.split(' ')[1:])
+          case 'size':
+            Commands.size(cmd.split(' ')[1:])
 
-        elif keyword == commands[9]:
-          Commands.cat(cmd.split(' ')[1])
+          case 'cat':
+            Commands.cat(cmd.split(' ')[1])
 
-        elif keyword == commands[10]:
-          Commands.kill(cmd.split(' ')[1])
+          case 'kill':
+            Commands.kill(cmd.split(' ')[1])
 
-        elif keyword == commands[11]:
-          Commands.user()
+          case 'user':
+            Commands.user()
 
-        elif keyword == commands[12]:
-          Commands.mov(cmd.split(' ')[1], cmd.split(' ')[2])
+          case 'mov':
+            Commands.mov(cmd.split(' ')[1], cmd.split(' ')[2])
 
-        elif keyword == commands[13]:
-          Commands.run(cmd.split(' ')[1])
+          case 'run':
+            Commands.run(cmd.split(' ')[1])
 
-        elif keyword == commands[14]:
-          Commands.rename(cmd.split(' ')[1], cmd.split(' ')[2])
+          case 'rename':
+            Commands.rename(cmd.split(' ')[1], cmd.split(' ')[2])
 
-        elif keyword == commands[15]:
-          Commands.sleep(cmd.split(' ')[1])
+          case 'sleep':
+            Commands.sleep(cmd.split(' ')[1])
 
-        elif keyword == commands[16]:
-          Commands.sum(cmd.split(' ')[1])
+          case 'sum':
+            Commands.sum(cmd.split(' ')[1])
 
-        elif keyword == commands[17]:
-          Commands.uptime()
+          case 'uptime':
+            Commands.uptime()
 
-        elif keyword == commands[18]:
-          Commands.date()
+          case 'date':
+            Commands.date()
 
-        elif keyword == commands[19]:
-          Commands.time()
+          case 'time':
+            Commands.time()
 
-        elif keyword == commands[21]:
-          if len(cmd_list) > 1:
-            Commands.dir(cmd.split(' ')[1])
-          else:
-            Commands.dir()
+          case 'dir':
+            if len(cmd_list) > 1:
+              Commands.dir(cmd.split(' ')[1])
+            else:
+              Commands.dir()
 
-        elif keyword == commands[23]:
-          Commands.calc(cmd.split(' ')[1])
+          case 'calc':
+            Commands.calc(cmd.split(' ')[1])
 
-        else:
-          print(f'Given command: "{cmd}" is invalid.')
+          case _:  # Equivalent to an 'else' statement
+            print(f'Given command: "{cmd}" is invalid.')
 
       except IndexError:
         print(f'Given command: "{cmd}" requires an argument.')
