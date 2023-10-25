@@ -15,7 +15,7 @@ from colorama import Fore, Back, Style
 * All variable declarations must be type hinted EX: num: int = 0
 * All paths use '/' to separate dirs instead of '\' like windows
 * If a function has parameters each variable must have specified types
-* All functions and classes use camelCase and variables use snake_case
+* All classes use CamelCase and variables / functions use snake_case
 * When assigning parameters in functions dont use spaces between equals sign
 * Functions without 'self' parameter in a class must have the @staticmethod tag
 * Whenever in a formatted string use double quotes and then single quotes to end
@@ -27,8 +27,6 @@ from colorama import Fore, Back, Style
 # TODO
 '''
 https://stackoverflow.com/questions/11352855/communication-between-two-computers-using-python-socket
-* Add ; to send multiple commands EX: touch test.txt ; rm test.txt
-ask ChatGPT I have no clue and i want to use best practices sooo...
 * Add help command for all commands
 * COMPILE TO .EXE
 '''
@@ -43,34 +41,40 @@ class Globals:
   # I know this is ugly but its so readable it should 
   # be a PEP8 standard for maps over like 20 items long
   command_map: dict = {
-    "cd":             0,              # * Change current directory
-    "ls":             1,              # * Display all files and dirs
-    "pwd":            2,              # * Print the current path
-    "echo":           3,              # * Print a string
-    "clear":          4,              # * Clear the console
-    "touch":          5,              # * Create a new file
-    "rm":             6,              # * Remove or delete a file
-    "mkdir":          7,              # * Create a new directory
-    "size":           8,              # * Prints the size of a file or dir
-    "cat":            9,              # * Prints the content of a file
-    "kill":           10,             # * Kills a process by name
-    "user":           11,             # * Prints the current user
-    "mov":            12,             # * Moves a file or dir to a new path
-    "run":            13,             # * Runs the given file
-    "rename":         14,             # * Renames the given file
-    "sleep":          15,             # * Sleep for a period of time
-    "sum":            16,             # * Print checksum of file
-    "uptime":         17,             # * Prints the uptime
-    "date":           18,             # * Prints the current date
-    "time":           19,             # * Prints the current time
-    "info":           20,             # Displays info about the file
-    "dir":            21,             # * Shows all items in a directory
-    "help":           22,             # Displays all commands with args and desc
-    "calc":           23,             # * Simple calculator with eval function
-    "zip":            24,             # Zip a file with the zip format
-    "unzip":          25,             # Unzip a file with the zip format
-    "shutdown":       26,             # Shutdown system after a prompt
-    "###":            27,             # Comment simply pass when this is parsed
+    "cd":              0,              # * Change current directory
+    "ls":              1,              # * Display all files and dirs
+    "pwd":             2,              # * Print the current path
+    "echo":            3,              # * Print a string
+    "clear":           4,              # * Clear the console
+    "touch":           5,              # * Create a new file
+    "rm":              6,              # * Remove or delete a file
+    "mkdir":           7,              # * Create a new directory
+    "size":            8,              # * Prints the size of a file or dir
+    "cat":             9,              # * Prints the content of a file
+    "kill":            10,             # * Kills a process by name
+    "user":            11,             # * Prints the current user
+    "mov":             12,             # * Moves a file or dir to a new path
+    "run":             13,             # * Runs the given file
+    "rename":          14,             # * Renames the given file
+    "sleep":           15,             # * Sleep for a period of time
+    "sum":             16,             # * Print checksum of file
+    "uptime":          17,             # * Prints the uptime
+    "date":            18,             # * Prints the current date
+    "time":            19,             # * Prints the current time
+    "info":            20,             # Displays info about the file
+    "dir":             21,             # * Shows all items in a directory
+    "help":            22,             # Displays all commands with args and desc
+    "calc":            23,             # * Simple calculator with eval function
+    "zip":             24,             # Zip a file with the zip format
+    "unzip":           25,             # Unzip a file with the zip format
+    "shutdown":        26,             # Shutdown system after a prompt
+    "###":             27,             # Comment simply pass when this is parsed
+    "dupe":            28,             # Duplicate a file or directory
+    "get-pid":         29,             # Prints process id from process name
+    "get-name":        30,             # Prints the name of the process from PID
+    "locate":          31,             # Loops file system until file is found
+    "source":          32,             # Run commands from a file '.'
+    "time":            33              # Measure total command / program run time
   }
 
 
@@ -81,23 +85,15 @@ class Helper:
     """
     Handles calling the right command and sending arguments
     """
-    commands: list = list(Globals.command_map.keys())
     loop: bool = True
 
-    while loop is True:
-      cur_dir: str = os.getcwd().replace('\\', '/')
-      if Globals.question_ticker == 0:
-        cmd: str = input(f'{Back.GREEN + Fore.BLACK}{cur_dir}{Style.RESET_ALL}\n$ ')
-      else:
-        cmd: str = input(f'\n{Back.GREEN + Fore.BLACK}{cur_dir}{Style.RESET_ALL}\n$ ')
-      cmd_list: list = cmd.split(' ')
-      keyword: str = cmd.split(' ')[0].lower()
-      Globals.question_ticker += 1
-
+    def switch_case(cmd: str) -> None:
       try:
         # Suggested by Sam Perlmutter (FRC Team: 3506)
-        # Didnt know switch cases existed in Python 
+        # Didn't know switch cases existed in Python
         # until he made fun of my spaghetti code
+        cmd_list: list = cmd.split(' ')
+
         match keyword:
           case '<sys>':  # Passes cmd directly to system
             cmd_dupe: list = cmd_list.copy()
@@ -176,12 +172,29 @@ class Helper:
             Commands.calc(cmd.split(' ')[1])
 
           # ----- Blank Input and Wildcard ----- #
-          case '': pass
+          case '':
+            pass
           case _:  # An 'else' statement
             print(f'Given command: "{cmd}" is invalid.')
 
       except IndexError:
         print(f'Given command: "{cmd}" requires an argument.')
+      except Exception as e:
+        print(f'Unknown exception occurred: \n{e}\n')
+
+    # ----- Looping User Input ----- #
+
+    while loop is True:
+      try:
+        cur_dir: str = os.getcwd().replace('\\', '/')
+        if Globals.question_ticker == 0:
+          command: str = input(f'{Back.GREEN + Fore.BLACK}{cur_dir}{Style.RESET_ALL}\n$ ')
+        else:
+          command: str = input(f'\n{Back.GREEN + Fore.BLACK}{cur_dir}{Style.RESET_ALL}\n$ ')
+
+        keyword: str = command.split(' ')[0].lower()
+        Globals.question_ticker += 1
+        switch_case(command)
       except Exception as e:
         print(f'Unknown exception occurred: \n{e}\n')
 
@@ -556,7 +569,7 @@ class Commands:
   @staticmethod
   def sleep(duration: str) -> None:
     """
-    Sleep / stall for a peroid of time
+    Sleep / stall for a period of time
 
     Args:
       duration (str): The duration of seconds to wait
