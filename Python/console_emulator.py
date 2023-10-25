@@ -38,7 +38,7 @@ class Globals:
   platform: str = sys.platform
   invaild_char_list: list = list('/\\:*?"<>|')
   help_message: str = ''''''  # Needs to be added lmao
-  # I know this is ugly but its so readable it should 
+  # I know this is ugly but its so readable it should
   # be a PEP8 standard for maps over like 20 items long
   command_map: dict = {
     "cd":              0,              # * Change current directory
@@ -74,7 +74,7 @@ class Globals:
     "get-name":        30,             # Prints the name of the process from PID
     "locate":          31,             # Loops file system until file is found
     "source":          32,             # Run commands from a file '.'
-    "time":            33              # Measure total command / program run time
+    "duration":        33              # Measure total command / program run time
   }
 
 
@@ -542,6 +542,34 @@ class Commands:
         obj.update(chunk)
     print(f'{file.split("/")[-1]} hash: {obj.hexdigest()}')
 
+  @staticmethod
+  def sleep(duration: str) -> None:
+    """
+    Sleep / stall for a period of time
+
+    Args:
+      duration (str): The duration of seconds to wait
+    """
+    if duration.isdigit():
+      for i in reversed(range(1, int(duration) + 1)):
+        if i == int(duration):
+          message: str = f'Sleeping for {i} seconds...\r'
+        elif i == 1:
+          message: str = f'Sleeping for {i} more second...\n\r'
+        else:
+          message: str = f'Sleeping for {i} more seconds...\r'
+
+        str_length: int = len(message)
+        if str_length > len(str(i)):
+          print('\x1b[2K', end=message)
+        else:
+          print(message, end='')
+        time.sleep(1)
+
+    else:
+      print('Given variable: "duration" is not a integer.')
+      return Globals.exit_code
+
   # ----- Smaller Functions ----- #
 
   @staticmethod
@@ -565,27 +593,6 @@ class Commands:
     else:
       date: str = os.popen('date /t').read().replace('\n', '')
     print(date)
-
-  @staticmethod
-  def sleep(duration: str) -> None:
-    """
-    Sleep / stall for a period of time
-
-    Args:
-      duration (str): The duration of seconds to wait
-    """
-    if duration.isdigit():
-      for i in reversed(range(1, int(duration) + 1)):
-        if i == int(duration):
-          print(f'Sleeping for {i} seconds...\r', end='')
-        elif i == 1:
-          print(f'Sleeping for {i} more second...\n\r', end='')
-        else:
-          print(f'Sleeping for {i} more seconds...\r', end='')
-        time.sleep(1)
-    else:
-      print('Given variable: "duration" is not a integer.')
-      return Globals.exit_code
 
   @staticmethod
   def calc(expression: str) -> None:
