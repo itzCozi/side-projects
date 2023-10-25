@@ -27,6 +27,8 @@ from colorama import Fore, Back, Style
 # TODO
 '''
 https://stackoverflow.com/questions/11352855/communication-between-two-computers-using-python-socket
+* Add comment support and if '#' in line make 
+all chars after '#' green to signal a comment
 * Add help command for all commands
 * COMPILE TO .EXE
 '''
@@ -37,7 +39,35 @@ class Globals:
   question_ticker: int = 0
   platform: str = sys.platform
   invaild_char_list: list = list('/\\:*?"<>|')
-  help_message: str = ''''''  # Needs to be added lmao
+  help_message: str = '''
+      Command          Description          Arguments
+
+  cd       |  Change directory from current dir      |  path: str
+  ls       |  Lists all items in the current dir     |  N/A
+  pwd      |  Print the current working directory    |  N/A
+  echo     |  Output all characters to console       |  message: [str]
+  clear    |  Clear the whole terminal to blank      |  N/A
+  touch    |  Create a new file from current dir     |  file_name: str
+  rm       |  Delete a file                          |  file_list: [str]
+  mkdir    |  Make a new directory                   |  dir_name_list: [str]
+  size     |  Output the size of the file            |  file_name_list: [str]
+  cat      |  Print the contents of the file         |  file_name: str
+  kill     |  Kill a process by name                 |  process: str
+  user     |  Prints the current user                |  N/A
+  mov      |  Move a file or dir to a new path       |  source_path: str, destination_path: str
+  run      |  Open a file using the native program   |  file_path: str
+  rename   |  Rename a file or dir                   |  target_file: str, new_name: str
+  sleep    |  Stalls for a duration of seconds       |  duration: int
+  sum      |  Prints hash of a file to terminal      |  file_name: str
+  uptime   |  Outputs the current uptime             |  N/A
+  date     |  Print the current date                 |  N/A
+  time     |  Print the current time                 |  N/A
+  info     |  Outputs info about the item            |  file_path: str
+  dir      |  Briefly prints all items in a dir      |  directory: str
+  help     |  Prints this menu                       |  N/A
+  calc     |  A simple calculator                    |  expression: str
+  '''
+  # they are accurate to the functions arguments
   # I know this is ugly but its so readable it should
   # be a PEP8 standard for maps over like 20 items long
   command_map: dict = {
@@ -61,14 +91,15 @@ class Globals:
     "uptime":          17,             # * Prints the uptime
     "date":            18,             # * Prints the current date
     "time":            19,             # * Prints the current time
-    "info":            20,             # Displays info about the file
+    "info":            20,             # * Displays info about the file
     "dir":             21,             # * Shows all items in a directory
-    "help":            22,             # Displays all commands with args and desc
+    "help":            22,             # * Displays all commands with args and desc
     "calc":            23,             # * Simple calculator with eval function
+
     "zip":             24,             # Zip a file with the zip format
     "unzip":           25,             # Unzip a file with the zip format
     "shutdown":        26,             # Shutdown system after a prompt
-    "###":             27,             # Comment simply pass when this is parsed
+    "#":               27,             # Comment simply pass when this is parsed
     "dupe":            28,             # Duplicate a file or directory
     "get-pid":         29,             # Prints process id from process name
     "get-name":        30,             # Prints the name of the process from PID
@@ -87,103 +118,6 @@ class Helper:
     """
     loop: bool = True
 
-    def switch_case(cmd: str) -> None:
-      try:
-        # Suggested by Sam Perlmutter (FRC Team: 3506)
-        # Didn't know switch cases existed in Python
-        # until he made fun of my spaghetti code
-        cmd_list: list = cmd.split(' ')
-
-        match keyword:
-          case '<sys>':  # Passes cmd directly to system
-            cmd_dupe: list = cmd_list.copy()
-            if 'ps' in cmd_dupe:
-              idx: int = cmd_dupe.index('ps')
-              cmd_dupe[idx]: str = 'powershell'
-            subprocess.call(' '.join(cmd_dupe[1:]), shell=True)
-
-          case 'cd':
-            Commands.cd(cmd.split(' ')[1])
-
-          case 'ls':
-            Commands.ls()
-
-          case 'pwd':
-            Commands.pwd()
-
-          case 'echo':
-            Commands.echo(cmd.split(' ')[1:])
-
-          case 'clear':
-            Commands.clear()
-
-          case 'touch':
-            Commands.touch(cmd.split(' ')[1])
-
-          case 'rm':
-            Commands.rm(cmd.split(' ')[1:])
-
-          case 'mkdir':
-            Commands.mkdir(cmd.split(' ')[1:])
-
-          case 'size':
-            Commands.size(cmd.split(' ')[1:])
-
-          case 'cat':
-            Commands.cat(cmd.split(' ')[1])
-
-          case 'kill':
-            Commands.kill(cmd.split(' ')[1])
-
-          case 'user':
-            Commands.user()
-
-          case 'mov':
-            Commands.mov(cmd.split(' ')[1], cmd.split(' ')[2])
-
-          case 'run':
-            Commands.run(cmd.split(' ')[1])
-
-          case 'rename':
-            Commands.rename(cmd.split(' ')[1], cmd.split(' ')[2])
-
-          case 'sleep':
-            Commands.sleep(cmd.split(' ')[1])
-
-          case 'sum':
-            Commands.sum(cmd.split(' ')[1])
-
-          case 'uptime':
-            Commands.uptime()
-
-          case 'date':
-            Commands.date()
-
-          case 'time':
-            Commands.time()
-
-          case 'dir':
-            if len(cmd_list) > 1:
-              Commands.dir(cmd.split(' ')[1])
-            else:
-              Commands.dir()
-
-          case 'calc':
-            Commands.calc(cmd.split(' ')[1])
-
-          # ----- Blank Input and Wildcard ----- #
-          case '':
-            pass
-          case _:  # An 'else' statement
-            print(f'Given command: "{cmd}" is invalid.')
-
-      except IndexError:
-        print(f'Given command: "{cmd}" requires an argument.')
-      except Exception as e:
-        print(f'Unknown exception occurred: \n{e}\n')
-
-    # ----- Looping User Input ----- #
-
     while loop is True:
       try:
         cur_dir: str = os.getcwd().replace('\\', '/')
@@ -192,11 +126,161 @@ class Helper:
         else:
           command: str = input(f'\n{Back.GREEN + Fore.BLACK}{cur_dir}{Style.RESET_ALL}\n$ ')
 
-        keyword: str = command.split(' ')[0].lower()
         Globals.question_ticker += 1
-        switch_case(command)
+        Helper.switch_case(command)
       except Exception as e:
         print(f'Unknown exception occurred: \n{e}\n')
+
+  @staticmethod
+  def switch_case(cmd: str) -> None:
+    """
+    The shell_initialize switch case for user input
+
+    Args:
+      cmd (str): The user input from shell_initialize()
+    """
+    try:
+      # Suggested by Sam Perlmutter (FRC Team: 3506)
+      # Didn't know switch cases existed in Python
+      # until he made fun of my spaghetti code
+      cmd_list: list = cmd.split(' ')
+      keyword: str = cmd_list[0].lower()
+
+      match keyword:
+        case '<sys>':  # Passes cmd directly to system
+          cmd_dupe: list = cmd_list.copy()
+          if 'ps' in cmd_dupe:
+            idx: int = cmd_dupe.index('ps')
+            cmd_dupe[idx]: str = 'powershell'
+          subprocess.call(' '.join(cmd_dupe[1:]), shell=True)
+
+        case 'cd':
+          Commands.cd(cmd_list[1])
+
+        case 'ls':
+          Commands.ls()
+
+        case 'pwd':
+          Commands.pwd()
+
+        case 'echo':
+          Commands.echo(cmd_list[1:])
+
+        case 'clear':
+          Commands.clear()
+
+        case 'touch':
+          Commands.touch(cmd_list[1])
+
+        case 'rm':
+          Commands.rm(cmd_list[1:])
+
+        case 'mkdir':
+          Commands.mkdir(cmd_list[1:])
+
+        case 'size':
+          Commands.size(cmd_list[1:])
+
+        case 'cat':
+          Commands.cat(cmd_list[1])
+
+        case 'kill':
+          Commands.kill(cmd_list[1])
+
+        case 'user':
+          Commands.user()
+
+        case 'mov':
+          Commands.mov(cmd_list[1], cmd_list[2])
+
+        case 'run':
+          Commands.run(cmd_list[1])
+
+        case 'rename':
+          Commands.rename(cmd_list[1], cmd_list[2])
+
+        case 'sleep':
+          Commands.sleep(cmd_list[1])
+
+        case 'sum':
+          Commands.sum(cmd_list[1])
+
+        case 'uptime':
+          Commands.uptime()
+
+        case 'date':
+          Commands.date()
+
+        case 'time':
+          Commands.time()
+
+        case 'info':
+          Commands.info(cmd_list[1])
+
+        case 'dir':
+          if len(cmd_list) > 1:
+            Commands.dir(cmd_list[1])
+          else:
+            Commands.dir()
+
+        case 'help':
+          Globals.question_ticker: int = 0
+          print(Globals.help_message)
+
+        case 'calc':
+          Commands.calc(cmd_list[1])
+
+        case 'source':
+          Commands.source(cmd_list[1])
+
+        # ----- Blank Input and Wildcard ----- #
+        case '':
+          pass
+        case _:  # An 'else' statement
+          print(f'Given command: "{cmd}" is invalid.')
+
+    except IndexError:
+      print(f'Given command: "{cmd}" requires an argument.')
+    except Exception as e:
+      print(f'Unknown exception occurred: \n{e}\n')
+
+  @staticmethod
+  def get_file_size(file_name: str) -> tuple:
+    """
+    Returns the size of the files / directories given
+
+    Args:
+      file_name (str): The name of the file to get size of
+
+    Returns
+      tuple: The files path, size and size type
+    """
+    current_dir: str = os.getcwd().replace('\\', '/')
+    file_path: str = f'{current_dir}/{file_name}'
+    if os.path.isfile(file_path):
+      byte_size: int = os.path.getsize(file_path)
+
+    else:
+      byte_size: int = 0
+      for path, dirs, files in os.walk(file_path):
+        for f in files:
+          fp: str = os.path.join(path, f)
+          byte_size += os.path.getsize(fp)
+
+    if byte_size > 1000:  # KB
+      size_type: str = 'KB'
+      size: int | float = round(byte_size / 1000, 2)
+    elif byte_size > 1000000:  # MB
+      size_type: str = 'MB'
+      size: int | float = round(byte_size / 1000000, 2)
+    elif byte_size > 1000000000:  # GB
+      size_type: str = 'GB'
+      size: int | float = round(byte_size / 1000000000, 2)
+    else:
+      size_type: str = 'Bytes'
+      size: int | float = round(byte_size, 2)
+
+    return file_name, size, size_type
 
   @staticmethod
   def get_name(pid: int) -> str:
@@ -221,7 +305,7 @@ class Helper:
     if 'process_name' in locals():
       return process_name
     else:
-      print(f'Given process ID: "{pid}" is not assigned to an active process')
+      print(f'Given process ID: "{pid}" is not assigned to an active process.')
       return Globals.exit_code
 
   @staticmethod
@@ -384,30 +468,10 @@ class Commands:
       file_name_list (list): A list of all file names to get size of
     """
     for file in file_name_list:
-      current_dir: str = os.getcwd().replace('\\', '/')
-      file_path: str = f'{current_dir}/{file}'
-      if os.path.isfile(file_path):
-        byte_size: int = os.path.getsize(file_path)
-
-      else:
-        byte_size: int = 0
-        for path, dirs, files in os.walk(file_path):
-          for f in files:
-            fp: str = os.path.join(path, f)
-            byte_size += os.path.getsize(fp)
-
-      if byte_size > 1000:  # KB
-        size_type: str = 'KB'
-        size: int | float = round(byte_size / 1000, 2)
-      elif byte_size > 1000000:  # MB
-        size_type: str = 'MB'
-        size: int | float = round(byte_size / 1000000, 2)
-      elif byte_size > 1000000000:  # GB
-        size_type: str = 'GB'
-        size: int | float = round(byte_size / 1000000000, 2)
-      else:
-        size_type: str = 'Bytes'
-        size: int | float = round(byte_size, 2)
+      ret_tuple: tuple = Helper.get_file_size(file)
+      file: str = ret_tuple[0]
+      size: int | float = ret_tuple[1]
+      size_type: str = ret_tuple[2]
 
       print(f'{file} is {size} {size_type}')
 
@@ -474,14 +538,40 @@ class Commands:
     file_name: str = file_name.replace('\\', '/')
     cur_dir: str = os.getcwd().replace('\\', '/')
 
-    try:
-      with open(file_name) as f:
-        content: str = f.read()
-    except FileNotFoundError:
+    if os.path.exists(file_name):
+      if os.path.isfile(file_name):
+        with open(file_name) as f:
+          content: str = f.read()
+
+      else:
+        print(f'"{file_name}" is not a file.')
+        return Globals.exit_code
+    else:
       print(f'Given file: "{file_name}" cannot be found in "{cur_dir}".')
       return Globals.exit_code
 
     print(content)
+
+  @staticmethod
+  def source(file_path: str) -> None:
+    """
+    Run commands from a file and output to console
+
+    Args:
+      file_path (str): The path to the source file
+    """
+    file_path: str = file_path.replace('\\', '/')
+
+    if os.path.isfile(file_path):
+      with open(file_path, 'r') as file:
+        content: str = file.read()
+      f_content: list = content.splitlines()
+    else:
+      print(f'Given file: "{file_path}" cannot be found or is not a file.')
+      return Globals.exit_code
+
+    for line in f_content:
+      Helper.switch_case(line)
 
   @staticmethod
   def mov(source_path: str, destination_path: str) -> None:
@@ -513,7 +603,7 @@ class Commands:
     Prints uptime on windows
     """
     if 'linux' in Globals.platform:
-      print('The \'uptime\' command is not supported on linux')
+      print('The \'uptime\' command is not supported on linux.')
       return Globals.exit_code
     lib: ctypes.WinDLL = ctypes.windll.kernel32
     t: int = lib.GetTickCount64()
@@ -570,6 +660,30 @@ class Commands:
       print('Given variable: "duration" is not a integer.')
       return Globals.exit_code
 
+  @staticmethod
+  def info(file_path: str) -> None:
+    file_path: str = file_path.replace('\\', '/')
+
+    if os.path.exists(file_path):
+      if os.path.isfile(file_path):
+        ret_tuple: tuple = Helper.get_file_size(file_path)
+        file: str = ret_tuple[0]
+        size: int | float = ret_tuple[1]
+        size_type: str = ret_tuple[2]
+        file_type: str = 'file'
+        print(f'{file_type.capitalize()}: {file} | {size} {size_type}')
+
+      elif os.path.isdir(file_path):
+        ret_tuple: tuple = Helper.get_file_size(file_path)
+        file: str = ret_tuple[0]
+        size: int | float = ret_tuple[1]
+        size_type: str = ret_tuple[2]
+        file_type: str = 'directory'
+        print(f'{file_type.capitalize()}: {file} | {size} {size_type}')
+    else:
+      print(f'File: "{file_path}" doesnt exist.')
+      return Globals.exit_code
+
   # ----- Smaller Functions ----- #
 
   @staticmethod
@@ -618,7 +732,10 @@ class Commands:
       new_name (str): What to rename to target to
     """
     target_file: str = target_file.replace('\\', '/')
-    new_name: str = f'{"".join(target_file.split("/")[:-1])}/{new_name}'
+    if len(target_file.split('/')) > 1:
+      new_name: str = f'{"".join(target_file.split("/")[:-1])}/{new_name}'
+    if target_file.split('/')[-1] == '':
+      new_name: str = f'{target_file.split("/")[0]}/{new_name}'
 
     if os.path.exists(target_file):
       os.rename(target_file, new_name)
@@ -664,7 +781,14 @@ class Commands:
       message (list): A list of user input split by spaces
     """
     formatted_out: str = ' '.join(message)
-    print(formatted_out)
+    out_list: list = list(formatted_out)
+    length: int = len(out_list)
+    if out_list[0] == '\'' or out_list[0] == '"':
+      out_list[0] = ''
+    if out_list[length - 1] == '\'' or out_list[length - 1] == '"':
+      out_list[0] = ''
+
+    print(''.join(out_list))
 
   @staticmethod
   def user() -> None:
