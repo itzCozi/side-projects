@@ -1,4 +1,5 @@
 # Emulates the Windows terminal and cmd
+# Find old iPhone and charge it for school
 
 import os
 import sys
