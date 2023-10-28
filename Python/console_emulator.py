@@ -4,6 +4,8 @@
 import os
 import sys
 import time
+import string
+import random
 import ctypes
 import signal
 import shutil
@@ -27,9 +29,13 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
-https://stackoverflow.com/questions/11352855/communication-between-two-computers-using-python-socket
-* Add comment support and if '#' in line make 
-all chars after '#' green to signal a comment
+* For all file arguments make a function to return it with '\' 
+replaced '/' and check if any invalid chars are in it if so throw 
+an error print statement. format_file(path: str, if_exists: str)
+this function replaces all: (var: str = var.replace('\\', '/'))
+and some if os.path.exists(file)
+* Look over all '=' to for type hinting
+* Look over all print() statements
 * Add help command for all commands
 * COMPILE TO .EXE
 '''
@@ -67,6 +73,11 @@ class Globals:
   dir      |  Briefly prints all items in a dir      |  directory: str
   help     |  Prints this menu                       |  N/A
   calc     |  A simple calculator                    |  expression: str
+  source   |  Run commands from a file               |  file_path: str
+  zip      |  Zip's a file or directory              |  target: str, zip_name: str, output_path: str
+  unzip    |  Unzip's a .zip file                    |  file_path: str
+  genID    |  Prints a randomly generated ID         |  N/A
+  shutdown |  Shut's down computer                   |  N/A
   '''
   # they are accurate to the functions arguments
   # I know this is ugly but its so readable it should
@@ -96,17 +107,18 @@ class Globals:
     "dir":             21,             # * Shows all items in a directory
     "help":            22,             # * Displays all commands with args and desc
     "calc":            23,             # * Simple calculator with eval function
+    "zip":             24,             # * Zip a file with the zip format
+    "unzip":           25,             # * Unzip a file with the zip format
+    "genID":           26,             # * Prints a randomly generated ID
+    "shutdown":        27,             # * Shutdown system after a prompt
+    "#":               28,             # * Comment simply pass when this is parsed
 
-    "zip":             24,             # Zip a file with the zip format
-    "unzip":           25,             # Unzip a file with the zip format
-    "shutdown":        26,             # Shutdown system after a prompt
-    "#":               27,             # Comment simply pass when this is parsed
-    "dupe":            28,             # Duplicate a file or directory
-    "get-pid":         29,             # Prints process id from process name
-    "get-name":        30,             # Prints the name of the process from PID
-    "locate":          31,             # Loops file system until file is found
-    "source":          32,             # Run commands from a file '.'
-    "duration":        33              # Measure total command / program run time
+    "dupe":            29,             # Duplicate a file or directory
+    "get-pid":         30,             # Prints process id from process name
+    "get-name":        31,             # Prints the name of the process from PID
+    "locate":          32,             # Loops file system until file is found
+    "source":          33,             # * Run commands from a file '.'
+    "duration":        34              # Measure total command / program run time
   }
 
 
@@ -145,7 +157,7 @@ class Helper:
       # Didn't know switch cases existed in Python
       # until he made fun of my spaghetti code
       cmd_list: list = cmd.split(' ')
-      keyword: str = cmd_list[0].lower()
+      keyword: str = str(cmd_list[0]).lower()
 
       match keyword:
         case '<sys>':  # Passes cmd directly to system
@@ -234,16 +246,101 @@ class Helper:
         case 'source':
           Commands.source(cmd_list[1])
 
+        case 'zip':
+          if len(cmd_list) == 4:
+            Helper.zip_file(cmd_list[1], cmd_list[2], cmd_list[3])
+          elif len(cmd_list) == 3:
+            Helper.zip_file(cmd_list[1], cmd_list[2])
+          else:
+            Helper.zip_file(cmd_list[1])
+
+        case 'unzip':
+          Helper.unzip_file(cmd_list[1])
+
+        case 'genid' | 'gen-id':
+          print(Helper.random_id())
+
+        case 'shutdown':
+          Commands.shutdown()
+
         # ----- Blank Input and Wildcard ----- #
-        case '':
+        case '' | '#':
           pass
         case _:  # An 'else' statement
-          print(f'Given command: "{cmd}" is invalid.')
+          print(f'Given command: "{cmd.lower()}" is invalid.')
 
     except IndexError:
-      print(f'Given command: "{cmd}" requires an argument.')
+      print(f'Given command: "{cmd.lower()}" requires an argument.')
     except Exception as e:
       print(f'Unknown exception occurred: \n{e}\n')
+
+  @staticmethod
+  def random_id() -> str:
+    """
+    Returns a random ID with a separater
+
+    Returns:
+      str: The ID with a '-' in the middle
+    """
+    length: int = 8
+    alphabet: list = list(string.ascii_uppercase + string.digits)
+    id_list: list = []
+    for i in range(length):
+      id_list.append(random.choice(alphabet))
+    id_list.insert(4, '-')
+    return str(''.join(id_list))
+
+  @staticmethod
+  def zip_file(target: str, zip_name: str = '', output_path: str = '') -> str:
+    """
+    Zips either one file or one directory
+
+    Args:
+      target (str): The file or directory to compress
+      output_path (str, optional): The path to the '.zip' file. Defaults to ''.
+
+    Returns:
+      str: The path to the .zip file
+    """
+    cur_dir = os.getcwd().replace('\\', '/')
+    if output_path == '': output_path = cur_dir
+    if '.zip' not in output_path:
+      output_path: str = output_path + '.zip'
+    if zip_name == '':
+      zip_path = f'{output_path}/{Helper.random_id()}'
+    else:
+      zip_path = f'{output_path}/{zip_name}'
+    dump_dir = f'{cur_dir}/{Helper.random_id()}'
+    os.mkdir(dump_dir)
+
+    if os.path.isfile(target):
+      with open(target, 'rb') as file_in:
+        content = file_in.read()
+      with open(f'{dump_dir}/{target}', 'wb') as file_out:
+        file_out.write(content)
+    elif os.path.isdir(target):
+      shutil.copytree(target, f'{dump_dir}/{target.split("/")[-1]}')
+
+    zip_file = shutil.make_archive(zip_path, 'zip', dump_dir)
+    shutil.rmtree(dump_dir)
+    return zip_file.replace('\\', '/')
+
+  @staticmethod
+  def unzip_file(file_path: str) -> str:
+    """
+    Unzip an archive to a folder named after it 
+
+    Args:
+      file_path (str): The path to the '.zip' file
+
+    Returns:
+      str: The path to the directory
+    """
+    file_path: str = file_path.replace('\\', '/')
+    cur_dir: str = os.getcwd().replace('\\', '/')
+    out_dir: str = f'{cur_dir}/{file_path.split("/")[-1][:-4]}'
+    shutil.unpack_archive(file_path, out_dir, 'zip')
+    return out_dir
 
   @staticmethod
   def get_file_size(file_name: str) -> tuple:
@@ -416,7 +513,7 @@ class Commands:
       file_list (list): A list made by shell_init()
     """
     for file in file_list:
-      del_question: str = f'Are you sure you want to delete {file}? (y/n): '
+      del_question: str = f'Are you sure you want to delete "{file}"? (Y/n): '
 
       if os.path.exists(file):
         if os.path.isfile(file):
@@ -604,7 +701,7 @@ class Commands:
     Prints uptime on windows
     """
     if 'linux' in Globals.platform:
-      print('The \'uptime\' command is not supported on linux.')
+      print('The "uptime" command is not supported on linux.')
       return Globals.exit_code
     lib: ctypes.WinDLL = ctypes.windll.kernel32
     t: int = lib.GetTickCount64()
@@ -663,6 +760,12 @@ class Commands:
 
   @staticmethod
   def info(file_path: str) -> None:
+    """
+    Prints info about the file or directory
+
+    Args:
+      file_path (str): The path to the item
+    """
     file_path: str = file_path.replace('\\', '/')
 
     if os.path.exists(file_path):
@@ -683,6 +786,22 @@ class Commands:
         print(f'{file_type.capitalize()}: {file} | {size} {size_type}')
     else:
       print(f'File: "{file_path}" doesnt exist.')
+      return Globals.exit_code
+
+  @staticmethod
+  def shutdown() -> None:
+    """
+    Shuts down computer
+    """
+    usr_confirm: str = input('Are you sure you want to shutdown this PC? (Y/n): ').lower()
+
+    if usr_confirm == 'yes' or usr_confirm == 'y':
+      if 'linux' in Globals.platform:
+        os.system('sudo shutdown -h now')
+      else:
+        os.system('shutdown /s')
+    else:
+      print(f'Cancelling shutdown, "{usr_confirm}" is not equal to "y" or "yes".')
       return Globals.exit_code
 
   # ----- Smaller Functions ----- #
