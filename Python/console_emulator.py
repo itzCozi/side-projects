@@ -29,13 +29,11 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
-* For all file arguments make a function to return it with '\' 
-replaced '/' and check if any invalid chars are in it if so throw 
-an error print statement. format_file(path: str, if_exists: str)
-this function replaces all: (var: str = var.replace('\\', '/'))
-and some if os.path.exists(file)
-* Look over all '=' to for type hinting
-* Look over all print() statements
+* Only tested up to command zip after the 2 new commands 
+were made please for the sake of god TEST MORE
+* Make sure optional parameters are specifed in the
+functions doc-string EX: output_path (str, optional)
+* ^^^ ADD THIS TODO ABOVE TO THE CODE RULES ^^^
 * Add help command for all commands
 * COMPILE TO .EXE
 '''
@@ -49,39 +47,37 @@ class Globals:
   help_message: str = '''
       Command          Description          Arguments
 
-  cd       |  Change directory from current dir      |  path: str
-  ls       |  Lists all items in the current dir     |  N/A
-  pwd      |  Print the current working directory    |  N/A
-  echo     |  Output all characters to console       |  message: [str]
-  clear    |  Clear the whole terminal to blank      |  N/A
-  touch    |  Create a new file from current dir     |  file_name: str
-  rm       |  Delete a file                          |  file_list: [str]
-  mkdir    |  Make a new directory                   |  dir_name_list: [str]
-  size     |  Output the size of the file            |  file_name_list: [str]
-  cat      |  Print the contents of the file         |  file_name: str
-  kill     |  Kill a process by name                 |  process: str
-  user     |  Prints the current user                |  N/A
-  mov      |  Move a file or dir to a new path       |  source_path: str, destination_path: str
-  run      |  Open a file using the native program   |  file_path: str
-  rename   |  Rename a file or dir                   |  target_file: str, new_name: str
-  sleep    |  Stalls for a duration of seconds       |  duration: int
-  sum      |  Prints hash of a file to terminal      |  file_name: str
-  uptime   |  Outputs the current uptime             |  N/A
-  date     |  Print the current date                 |  N/A
-  time     |  Print the current time                 |  N/A
-  info     |  Outputs info about the item            |  file_path: str
-  dir      |  Briefly prints all items in a dir      |  directory: str
-  help     |  Prints this menu                       |  N/A
-  calc     |  A simple calculator                    |  expression: str
-  source   |  Run commands from a file               |  file_path: str
-  zip      |  Zip's a file or directory              |  target: str, zip_name: str, output_path: str
-  unzip    |  Unzip's a .zip file                    |  file_path: str
-  genID    |  Prints a randomly generated ID         |  N/A
-  shutdown |  Shut's down computer                   |  N/A
+  cd         |  Change directory from current dir      |  path: str
+  ls         |  Lists all items in the current dir     |  N/A
+  pwd        |  Print the current working directory    |  N/A
+  echo       |  Output all characters to console       |  message: [str]
+  clear      |  Clear the whole terminal to blank      |  N/A
+  touch      |  Create a new file from current dir     |  file_name: str
+  rm         |  Delete a file                          |  file_list: [str]
+  mkdir      |  Make a new directory                   |  dir_name_list: [str]
+  size       |  Output the size of the file            |  file_name_list: [str]
+  cat        |  Print the contents of the file         |  file_name: str
+  kill       |  Kill a process by name                 |  process: str
+  user       |  Prints the current user                |  N/A
+  mov        |  Move a file or dir to a new path       |  source_path: str, destination_path: str
+  run        |  Open a file using the native program   |  file_path: str
+  rename     |  Rename a file or dir                   |  target_file: str, new_name: str
+  sleep      |  Stalls for a duration of seconds       |  duration: int
+  sum        |  Prints hash of a file to terminal      |  file_name: str
+  uptime     |  Outputs the current uptime             |  N/A
+  date       |  Print the current date                 |  N/A
+  time       |  Print the current time                 |  N/A
+  info       |  Outputs info about the item            |  file_path: str
+  dir        |  Briefly prints all items in a dir      |  directory: str
+  help       |  Prints this menu                       |  N/A
+  calc       |  A simple calculator                    |  expression: str
+  source     |  Run commands from a file               |  file_path: str
+  zip        |  Zip's a file or directory              |  target: str, zip_name: str, output_path: str
+  unzip      |  Unzips a .zip file                     |  file_path: str
+  genID      |  Prints a randomly generated ID         |  N/A
+  shutdown   |  Shuts down computer                    |  N/A
   '''
   # they are accurate to the functions arguments
-  # I know this is ugly but its so readable it should
-  # be a PEP8 standard for maps over like 20 items long
   command_map: dict = {
     "cd":              0,              # * Change current directory
     "ls":              1,              # * Display all files and dirs
@@ -133,7 +129,7 @@ class Helper:
 
     while loop is True:
       try:
-        cur_dir: str = os.getcwd().replace('\\', '/')
+        cur_dir: str = Helper.get_current_directory()
         if Globals.question_ticker == 0:
           command: str = input(f'{Back.GREEN + Fore.BLACK}{cur_dir}{Style.RESET_ALL}\n$ ')
         else:
@@ -275,9 +271,57 @@ class Helper:
       print(f'Unknown exception occurred: \n{e}\n')
 
   @staticmethod
+  def get_current_directory() -> str:
+    """
+    Gets current directory without backslashes
+
+    Returns:
+      str: The formatted directory
+    """
+    current_dir: str = os.getcwd().replace('\\', '/')
+    return current_dir
+
+  @staticmethod
+  def format_file_path(item_path: str, if_exists: bool = True) -> str:
+    """
+    Makes all file paths uniform and displays error messages
+
+    Args:
+      item_path (str): The path of the item
+      if_exists (bool, True): If the item doesn't exist throw error
+
+    Returns:
+      str: The formatted path
+    """
+    item_path: str = item_path.replace('\\', '/')
+
+    def _check(arg: str) -> None:
+      for char in arg:
+        if char in Globals.invaild_char_list:
+          print(
+            f'Given item: "{arg}" has the invaild character "{char}" in it.'
+          )
+        else:
+          continue
+
+    if if_exists is True:
+      if not os.path.exists(item_path):
+        print(
+          f'Given item: "{item_path}" cannot be found because it does not exist.'
+        )
+        return Globals.exit_code
+
+    if '/' in item_path:
+      item_list: list = item_path.split('/')
+      _check(item_list[-1])
+    else:
+      _check(item_path)
+    return str(item_path)
+
+  @staticmethod
   def random_id() -> str:
     """
-    Returns a random ID with a separater
+    Returns a random ID with a separate
 
     Returns:
       str: The ID with a '-' in the middle
@@ -297,38 +341,42 @@ class Helper:
 
     Args:
       target (str): The file or directory to compress
+      zip_name (str, optional): The name of the new '.zip' archive
       output_path (str, optional): The path to the '.zip' file. Defaults to ''.
 
     Returns:
       str: The path to the .zip file
     """
-    cur_dir = os.getcwd().replace('\\', '/')
-    if output_path == '': output_path = cur_dir
-    if '.zip' not in output_path:
-      output_path: str = output_path + '.zip'
+    target: str = Helper.format_file_path(target)
+    cur_dir: str = Helper.get_current_directory()
+    if output_path == '':
+      output_path: str = cur_dir
     if zip_name == '':
-      zip_path = f'{output_path}/{Helper.random_id()}'
+      zip_path: str = f'{output_path}/{Helper.random_id()}'
     else:
-      zip_path = f'{output_path}/{zip_name}'
-    dump_dir = f'{cur_dir}/{Helper.random_id()}'
+      zip_name: str = Helper.format_file_path(zip_name, False)
+      zip_path: str = f'{output_path}/{zip_name}'
+    dump_dir: str = f'{cur_dir}/{Helper.random_id()}'
     os.mkdir(dump_dir)
 
     if os.path.isfile(target):
       with open(target, 'rb') as file_in:
-        content = file_in.read()
+        content: bytes = file_in.read()
+      if '/' in target:
+        target: str = target.split('/')[-1]
       with open(f'{dump_dir}/{target}', 'wb') as file_out:
         file_out.write(content)
     elif os.path.isdir(target):
       shutil.copytree(target, f'{dump_dir}/{target.split("/")[-1]}')
 
-    zip_file = shutil.make_archive(zip_path, 'zip', dump_dir)
+    zip_file: str = shutil.make_archive(zip_path, 'zip', dump_dir)
     shutil.rmtree(dump_dir)
     return zip_file.replace('\\', '/')
 
   @staticmethod
   def unzip_file(file_path: str) -> str:
     """
-    Unzip an archive to a folder named after it 
+    Unzip an archive to a folder named after it
 
     Args:
       file_path (str): The path to the '.zip' file
@@ -336,8 +384,8 @@ class Helper:
     Returns:
       str: The path to the directory
     """
-    file_path: str = file_path.replace('\\', '/')
-    cur_dir: str = os.getcwd().replace('\\', '/')
+    file_path: str = Helper.format_file_path(file_path)
+    cur_dir: str = Helper.get_current_directory()
     out_dir: str = f'{cur_dir}/{file_path.split("/")[-1][:-4]}'
     shutil.unpack_archive(file_path, out_dir, 'zip')
     return out_dir
@@ -353,7 +401,8 @@ class Helper:
     Returns
       tuple: The files path, size and size type
     """
-    current_dir: str = os.getcwd().replace('\\', '/')
+    current_dir: str = Helper.get_current_directory()
+    file_name: str = Helper.format_file_path(file_name)
     file_path: str = f'{current_dir}/{file_name}'
     if os.path.isfile(file_path):
       byte_size: int = os.path.getsize(file_path)
@@ -453,7 +502,7 @@ class Commands:
     Args:
       path (str): The path to cd to
     """
-    path: str = path.replace('\\', '/')
+    path: str = Helper.format_file_path(path)
 
     if 'linux' in Globals.platform:
       if path == '~':
@@ -486,7 +535,7 @@ class Commands:
     """
     List all items in the current directory
     """
-    directory: str = os.getcwd().replace('\\', '/')
+    directory: str = Helper.get_current_directory()
     dir_items: list = os.listdir(directory)
     ticker: int = 0
     print('---------------------------------------------')
@@ -513,6 +562,7 @@ class Commands:
       file_list (list): A list made by shell_init()
     """
     for file in file_list:
+      file: str = Helper.format_file_path(file)
       del_question: str = f'Are you sure you want to delete "{file}"? (Y/n): '
 
       if os.path.exists(file):
@@ -547,7 +597,7 @@ class Commands:
     Args:
       dir_name_list (list): A list of all dirs to make
     """
-    cur_dir: str = os.getcwd().replace('\\', '/')
+    cur_dir: str = Helper.get_current_directory()
     for directory in dir_name_list:
       for char in directory:
         if char in Globals.invaild_char_list:
@@ -579,15 +629,16 @@ class Commands:
     Print all files and folders in current dir or a specified path
 
     Args:
-      directory (str): An optional directory if not using current
+      directory (str, optional): An optional directory if not using current
     """
     ticker: int = 0
     if directory == '':
-      directory: str = os.getcwd()
+      directory: str = Helper.get_current_directory()
     if len(os.listdir(directory)) == 0:
       print(f'The current directory: "{directory}" is empty.')
       return Globals.exit_code
-    directory: str = directory.replace('\\', '/')
+    else:
+      directory: str = Helper.format_file_path(directory)
 
     for item in os.listdir(directory):
       ticker += 1
@@ -633,8 +684,8 @@ class Commands:
     Args:
       file_name (str): The name of the file to print
     """
-    file_name: str = file_name.replace('\\', '/')
-    cur_dir: str = os.getcwd().replace('\\', '/')
+    file_name: str = Helper.format_file_path(file_name)
+    cur_dir: str = Helper.get_current_directory()
 
     if os.path.exists(file_name):
       if os.path.isfile(file_name):
@@ -658,7 +709,7 @@ class Commands:
     Args:
       file_path (str): The path to the source file
     """
-    file_path: str = file_path.replace('\\', '/')
+    file_path: str = Helper.format_file_path(file_path)
 
     if os.path.isfile(file_path):
       with open(file_path, 'r') as file:
@@ -680,7 +731,8 @@ class Commands:
       source_path (str): The file to be moved
       destination_path (str): Where to output the file
     """
-    source_path: str = source_path.replace('\\', '/')
+    source_path: str = Helper.format_file_path(source_path)
+    destination_path: str = Helper.format_file_path(destination_path, False)
 
     if os.path.exists(destination_path):
       print(f'Destination "{destination_path}" already exists.')
@@ -694,6 +746,7 @@ class Commands:
     else:
       print(f'File: "{source_path}" doesnt exist.')
       return Globals.exit_code
+    os.remove(source_path)
 
   @staticmethod
   def uptime() -> None:
@@ -720,7 +773,7 @@ class Commands:
     Args:
       file_name (str): The target files name
     """
-    file: str = file_name.replace('\\', '/')
+    file: str = Helper.format_file_path(file_name)
     obj = hashlib.sha1()  # Weird type
 
     with open(file, 'rb') as Fin:
@@ -766,7 +819,7 @@ class Commands:
     Args:
       file_path (str): The path to the item
     """
-    file_path: str = file_path.replace('\\', '/')
+    file_path: str = Helper.format_file_path(file_path)
 
     if os.path.exists(file_path):
       if os.path.isfile(file_path):
@@ -851,7 +904,9 @@ class Commands:
       target_file (str): The file to be renamed
       new_name (str): What to rename to target to
     """
-    target_file: str = target_file.replace('\\', '/')
+    target_file: str = Helper.format_file_path(target_file)
+    new_name: str = Helper.format_file_path(new_name, False)
+
     if len(target_file.split('/')) > 1:
       new_name: str = f'{"".join(target_file.split("/")[:-1])}/{new_name}'
     if target_file.split('/')[-1] == '':
@@ -888,7 +943,8 @@ class Commands:
     Args:
       file_name (str): What to name to new file / where to put it
     """
-    current_dir: str = os.getcwd().replace('\\', '/')
+    current_dir: str = Helper.get_current_directory()
+    file_name: str = Helper.format_file_path(file_name, False)
     with open(f'{current_dir}/{file_name}', 'x') as file:
       file.close()
 
@@ -934,7 +990,7 @@ class Commands:
     """
     Print the current working directory
     """
-    current_dir: str = os.getcwd()
+    current_dir: str = Helper.get_current_directory()
     print(current_dir)
 
 
