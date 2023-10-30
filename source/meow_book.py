@@ -24,29 +24,35 @@ class Helper:
 
 
 def write_book():
-  # TODO: Add diffrent lenghts of meows
   # TODO: Add newlines support
   # TODO: Add punction
   # TODO: Add uppercase support
-  book_name: str = Helper.random_id()
+  book_name: str = Helper.random_id() + '.txt'
   pun_list: list = ['.', '!', ',', ';']
   for page_num in range(Globals.page_count):
     for line in range(Globals.line_count):
       line_list: list = []
-      for char in range(Globals.chars_per_line):
-        prev_char: str = line_list[char - 1] if char > 0 else ''
-        match prev_char:
-          case '' | ' ':
-            line_list.append('m')
-          case 'm':
-            line_list.append('e')
-          case 'e':
-            line_list.append('o')
-          case 'o':
-            line_list.append('w')
-          case 'w':
-            line_list.append(' ')
-      print(''.join(line_list))
+      line_chars: int = 0
+
+      while line_chars > Globals.chars_per_line:
+        m_count: int = random.randint(1, 5)
+        e_count: int = random.randint(1, 5)
+        o_count: int = random.randint(1, 5)
+        w_count: int = random.randint(1, 5)
+        __count: int = random.randint(1, 3)
+        char_count += m_count + e_count + o_count + w_count + __count
+
+        if char_count > 63:
+          for i in range(m_count): line_list.append('m')
+          for i in range(e_count): line_list.append('e')
+          for i in range(o_count): line_list.append('o')
+          for i in range(w_count): line_list.append('w')
+          for i in range(__count): line_list.append(' ')
+        else:
+          line_list.append('\n')
+          with open(book_name, 'a') as file:
+            file.write(''.join(line_list))
+          char_count: int = 0
 
 
 write_book()
