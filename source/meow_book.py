@@ -24,42 +24,29 @@ class Helper:
 
 
 def write_book():
+  # TODO: Add diffrent lenghts of meows
+  # TODO: Add newlines support
+  # TODO: Add punction
   # TODO: Add uppercase support
   book_name: str = Helper.random_id()
   pun_list: list = ['.', '!', ',', ';']
   for page_num in range(Globals.page_count):
     for line in range(Globals.line_count):
-      char_ticker: int = 0
-      m_count: int = random.randint(1, 5)
-      e_count: int = random.randint(1, 5)
-      o_count: int = random.randint(1, 5)
-      w_count: int = random.randint(1, 5)
-      __count: int = random.randint(1, 3)
-      meow_list: list = [m_count, e_count, o_count, w_count, __count]
-      char_ticker += sum(meow_list)
-
-      if char_ticker != 63:
-        out_list: list = []
-        for m in range(m_count):
-          out_list.append('m')
-        for e in range(e_count):
-          out_list.append('e')
-        for o in range(o_count):
-          out_list.append('o')
-        for w in range(w_count):
-          out_list.append('w')
-
-        out_list.append(random.choice(pun_list))
-        for white in range(__count):
-          out_list.append(' ')
-        with open(f'{book_name}.txt', 'a') as file:
-          # Print the meow list then a symbol
-          print(''.join(out_list))
-          file.write(''.join(out_list))
-      else:
-        with open(f'{book_name}.txt', 'a') as file:
-          file.write('\n')
-        continue
+      line_list: list = []
+      for char in range(Globals.chars_per_line):
+        prev_char: str = line_list[char - 1] if char > 0 else ''
+        match prev_char:
+          case '' | ' ':
+            line_list.append('m')
+          case 'm':
+            line_list.append('e')
+          case 'e':
+            line_list.append('o')
+          case 'o':
+            line_list.append('w')
+          case 'w':
+            line_list.append(' ')
+      print(''.join(line_list))
 
 
 write_book()
