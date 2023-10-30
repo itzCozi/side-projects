@@ -1,5 +1,4 @@
 # Emulates the Windows terminal and cmd
-# Find old iPhone and charge it for school
 
 import os
 import sys
@@ -76,6 +75,9 @@ class Globals:
   unzip      |  Unzips a .zip file                     |  file_path: str
   genID      |  Prints a randomly generated ID         |  N/A
   shutdown   |  Shuts down computer                    |  N/A
+  dupe       |  Duplicates a file or directory         |  source_path: str, destination_path: str
+  get-pid    |  Prints process id from process name    |  process: str
+  get-name   |  Gets the name of the process from PID  |  pid: int
   '''
   # they are accurate to the functions arguments
   command_map: dict = {
@@ -108,10 +110,10 @@ class Globals:
     "genID":           26,             # * Prints a randomly generated ID
     "shutdown":        27,             # * Shutdown system after a prompt
     "#":               28,             # * Comment simply pass when this is parsed
+    "dupe":            29,             # * Duplicate a file or directory
+    "get-pid":         30,             # * Prints process id from process name
+    "get-name":        31,             # * Prints the name of the process from PID
 
-    "dupe":            29,             # Duplicate a file or directory
-    "get-pid":         30,             # Prints process id from process name
-    "get-name":        31,             # Prints the name of the process from PID
     "locate":          32,             # Loops file system until file is found
     "source":          33,             # * Run commands from a file '.'
     "duration":        34              # Measure total command / program run time
@@ -258,6 +260,20 @@ class Helper:
 
         case 'shutdown':
           Commands.shutdown()
+
+        case 'dupe':
+          if len(cmd_list) == 2:
+            Commands.dupe(cmd_list[1])
+          elif len(cmd_list) == 3:
+            Commands.dupe(cmd_list[1], cmd_list[2])
+          else:
+            print(f'Given command: "{cmd.lower()}" is invalid.')
+
+        case 'get-pid' | 'getpid':
+          print(Helper.get_pid(cmd_list[1]), end='\n')
+
+        case 'get-name' | 'getname':
+          print(Helper.get_name(cmd_list[1]), end='\n')
 
         # ----- Blank Input and Wildcard ----- #
         case '' | '#':
@@ -456,7 +472,7 @@ class Helper:
       return Globals.exit_code
 
   @staticmethod
-  def get_PID(process: str) -> list:
+  def get_pid(process: str) -> list:
     """
     Returns a process PID from name
 
@@ -667,7 +683,7 @@ class Commands:
     """
     if '.exe' in process:
       process: str = process[:-4]
-    pid_list: list = Helper.get_PID(process)
+    pid_list: list = Helper.get_pid(process)
     if pid_list is None:
       return Globals.exit_code
 
@@ -747,6 +763,40 @@ class Commands:
       print(f'File: "{source_path}" doesnt exist.')
       return Globals.exit_code
     os.remove(source_path)
+
+  @staticmethod
+  def dupe(source_path: str, destination_path: str = '') -> None:
+    cur_dir: str = Helper.get_current_directory()
+    source_path: str = Helper.format_file_path(source_path)
+    if destination_path == '':
+      file_path: str = source_path.split("/")[-1]
+      file_name: str = file_path[:-4]
+      file_ext: str = file_path[file_path.find('.'):]
+      if '(' and ')' in file_path:
+        par_start: int = file_path.find('(')
+        par_end: int = file_path.find(')')
+        file_name: str = file_name[:par_start] + file_name[file_path.find('.'):]
+        par_num: int = int(
+          file_path[par_start:par_end].replace('(', '').replace(')', '')
+        )
+        destination_path: str = f'{cur_dir}/{file_name}({par_num + 1}){file_ext}'
+
+      else:
+        destination_path: str = f'{cur_dir}/{file_name}(1){file_ext}'
+    destination_path: str = Helper.format_file_path(destination_path, False)
+
+    if os.path.exists(destination_path):
+      print(f'Destination "{destination_path}" already exists.')
+      return Globals.exit_code
+
+    if os.path.exists(source_path):
+      if os.path.isfile(source_path):
+        shutil.copyfile(source_path, destination_path)
+      elif os.path.isdir(source_path):
+        shutil.copytree(source_path, destination_path)
+    else:
+      print(f'File: "{source_path}" doesnt exist.')
+      return Globals.exit_code
 
   @staticmethod
   def uptime() -> None:
