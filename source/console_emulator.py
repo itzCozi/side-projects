@@ -9,6 +9,7 @@ import ctypes
 import signal
 import shutil
 import hashlib
+import requests
 import subprocess
 from colorama import Fore, Back, Style
 
@@ -30,11 +31,13 @@ functions doc-string EX: output_path (str, optional)
 
 # TODO
 '''
+COMMAND REFRENCES
+---------------------------------------------------------------------------
 https://ss64.com/bash/
 https://www.google.com/search?q=all+helpful+linux+commands&rlz=1CAHTBP_enUS1079&oq=all+helpful+linux+co&gs_lcrp=EgZjaHJvbWUqBwgBECEYoAEyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRigATIKCAQQIRgWGB0YHjIKCAUQIRgWGB0YHtIBCDk3NjNqMWo3qAIAsAIA&sourceid=chrome&ie=UTF-8&safe=active&ssui=on
+---------------------------------------------------------------------------
 
-* If search_item == cur or current set search_dir to
-Helper.get_current_directory()
+* Look over all arguments in help_message doc-string
 * Add help command for all commands
 * COMPILE TO .EXE
 '''
@@ -48,39 +51,41 @@ class Globals:
   help_message: str = '''
       Command          Description          Arguments
 
-  cd         |  Change directory from current dir      |  path: str
-  ls         |  Lists all items in the current dir     |  N/A
-  pwd        |  Print the current working directory    |  N/A
-  echo       |  Output all characters to console       |  message: [str]
-  clear      |  Clear the whole terminal to blank      |  N/A
-  touch      |  Create a new file from current dir     |  file_name: str
-  rm         |  Delete a file                          |  file_list: [str]
-  mkdir      |  Make a new directory                   |  dir_name_list: [str]
-  size       |  Output the size of the file            |  file_name_list: [str]
-  cat        |  Print the contents of the file         |  file_name: str
-  kill       |  Kill a process by name                 |  process: str
-  user       |  Prints the current user                |  N/A
-  mov        |  Move a file or dir to a new path       |  source_path: str, destination_path: str
-  run        |  Open a file using the native program   |  file_path: str
-  rename     |  Rename a file or dir                   |  target_file: str, new_name: str
-  sleep      |  Stalls for a duration of seconds       |  duration: int
-  sum        |  Prints hash of a file to terminal      |  file_name: str
-  uptime     |  Outputs the current uptime             |  N/A
-  date       |  Print the current date                 |  N/A
-  time       |  Print the current time                 |  N/A
-  info       |  Outputs info about the item            |  file_path: str
-  dir        |  Briefly prints all items in a dir      |  directory: str
-  help       |  Prints this menu                       |  N/A
-  calc       |  A simple calculator                    |  expression: str
-  source     |  Run commands from a file               |  file_path: str
-  zip        |  Zip's a file or directory              |  target: str, zip_name: str, output_path: str
-  unzip      |  Unzips a .zip file                     |  file_path: str
-  genID      |  Prints a randomly generated ID         |  N/A
-  shutdown   |  Shuts down computer                    |  N/A
-  dupe       |  Duplicates a file or directory         |  source_path: str, destination_path: str
-  get-pid    |  Prints process id from process name    |  process: str
-  get-name   |  Gets the name of the process from PID  |  pid: int
-  locate     |  Searches file system for given item    |  search_item: str
+  cd         |  Change directory from current dir        |  path: str
+  ls         |  Lists all items in the current dir       |  N/A
+  pwd        |  Print the current working directory      |  N/A
+  echo       |  Output all characters to console         |  message: [str]
+  clear      |  Clear the whole terminal to blank        |  N/A
+  touch      |  Create a new file from current dir       |  file_name: str
+  rm         |  Delete a file                            |  file_list: [str]
+  mkdir      |  Make a new directory                     |  dir_name_list: [str]
+  size       |  Output the size of the file              |  file_name_list: [str]
+  cat        |  Print the contents of the file           |  file_name: str
+  kill       |  Kill a process by name                   |  process: str
+  user       |  Prints the current user                  |  N/A
+  mov        |  Move a file or dir to a new path         |  source_path: str, destination_path: str
+  run        |  Open a file using the native program     |  file_path: str
+  rename     |  Rename a file or dir                     |  target_file: str, new_name: str
+  sleep      |  Stalls for a duration of seconds         |  duration: int
+  sum        |  Prints hash of a file to terminal        |  file_name: str
+  uptime     |  Outputs the current uptime               |  N/A
+  date       |  Print the current date                   |  N/A
+  time       |  Print the current time                   |  N/A
+  info       |  Outputs info about the item              |  file_path: str
+  dir        |  Briefly prints all items in a dir        |  directory: str
+  help       |  Prints this menu                         |  N/A
+  calc       |  A simple calculator                      |  expression: str
+  source     |  Run commands from a file                 |  file_path: str
+  zip        |  Zip's a file or directory                |  target: str, zip_name: str, output_path: str
+  unzip      |  Unzips a .zip file                       |  file_path: str
+  genID      |  Prints a randomly generated ID           |  N/A
+  shutdown   |  Shuts down computer                      |  N/A
+  dupe       |  Duplicates a file or directory           |  source_path: str, destination_path: str
+  get-pid    |  Prints process id from process name      |  process: str
+  get-name   |  Gets the name of the process from PID    |  pid: int
+  locate     |  Searches file system for given item      |  search_item: str
+  duration   |  Measure total command / .exe run time    |  command: [str]
+  download   |  Downloads a file from URL to a directory |  url: str, out_path: str
   '''
   # they are accurate to the functions arguments
   command_map: dict = {
@@ -118,8 +123,8 @@ class Globals:
     "get-name":        31,             # * Prints the name of the process from PID
     "locate":          32,             # * Loops file system until file is found
     "source":          33,             # * Run commands from a file '.'
-
-    "duration":        34              # Measure total command / program run time
+    "duration":        34,             # * Measure total command / program run time
+    "download":        35              # * Downloads a file to a destination
   }
 
 
@@ -280,6 +285,12 @@ class Helper:
 
         case 'locate':
           Commands.locate(cmd_list[1])
+
+        case 'duration':
+          Commands.duration(cmd_list[1:])
+
+        case 'download':
+          Commands.download(cmd_list[1], cmd_list[2])
 
         # ----- Blank Input and Wildcard ----- #
         case '' | '#':
@@ -772,6 +783,13 @@ class Commands:
 
   @staticmethod
   def dupe(source_path: str, destination_path: str = '') -> None:
+    """
+    Duplicates a file to a certain path or current directory
+
+    Args:
+      source_path (str): File to be duplicated
+      destination_path (str, optional): Where to duplicate the file
+    """
     cur_dir: str = Helper.get_current_directory()
     source_path: str = Helper.format_file_path(source_path)
     if destination_path == '':
@@ -813,6 +831,12 @@ class Commands:
 
   @staticmethod
   def locate(search_item: str) -> None:
+    """
+    Finds a file or directory then print the full path
+
+    Args:
+      search_item (str): The file or directory to look for
+    """
     search_item: str = Helper.format_file_path(search_item, False)
     files_iterated: int = 0
     dirs_iterated: int = 0
@@ -962,6 +986,30 @@ class Commands:
       return Globals.exit_code
 
   @staticmethod
+  def download(url: str, out_path: str = ''):
+    """
+    Download and write to file
+
+    Args:
+      url (str): The URL of the file
+      out_path (str, optional): Where to download the file to
+    """
+    file_content: requests.models.Response = requests.get(url)
+    if out_path == '':
+      out_path: str = Helper.get_current_directory()
+    out_path: str = Helper.format_file_path(out_path, False)
+
+    if '/' in out_path:
+      destination: str = ''.join(out_path.split('/')[:-1])
+      name: str = out_path.split('/')[-1]
+
+      with open(f'{destination}/{name}', 'wb') as f:
+        f.write(file_content.content)
+    else:
+      with open(out_path, 'wb') as f:
+        f.write(file_content.content)
+
+  @staticmethod
   def shutdown() -> None:
     """
     Shuts down computer
@@ -978,6 +1026,25 @@ class Commands:
       return Globals.exit_code
 
   # ----- Smaller Functions ----- #
+
+  @staticmethod
+  def duration(command: list) -> None:
+    """
+    Prints the duration of a command or program runtime
+
+    Args:
+      command (list): The list of commands to measure
+    """
+    command: str = ' '.join(command)
+    if ''.join(command[:2]) == './':
+      st: float = time.time()
+      Commands.run(command.replace('./', ''))
+      et: float = time.time()
+    else:
+      st: float = time.time()
+      Helper.switch_case(command)
+      et: float = time.time()
+    print(f'Running: "{command}" took: {round(et-st, 2)} seconds.')
 
   @staticmethod
   def time() -> None:
