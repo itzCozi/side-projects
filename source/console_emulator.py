@@ -28,8 +28,11 @@ from colorama import Fore, Back, Style
 
 # TODO
 '''
-* Only tested up to command zip after the 2 new commands 
-were made please for the sake of god TEST MORE
+https://ss64.com/bash/
+https://www.google.com/search?q=all+helpful+linux+commands&rlz=1CAHTBP_enUS1079&oq=all+helpful+linux+co&gs_lcrp=EgZjaHJvbWUqBwgBECEYoAEyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRigATIKCAQQIRgWGB0YHjIKCAUQIRgWGB0YHtIBCDk3NjNqMWo3qAIAsAIA&sourceid=chrome&ie=UTF-8&safe=active&ssui=on
+
+* If search_item == cur or current set search_dir to
+Helper.get_current_directory()
 * Make sure optional parameters are specifed in the
 functions doc-string EX: output_path (str, optional)
 * ^^^ ADD THIS TODO ABOVE TO THE CODE RULES ^^^
@@ -78,6 +81,7 @@ class Globals:
   dupe       |  Duplicates a file or directory         |  source_path: str, destination_path: str
   get-pid    |  Prints process id from process name    |  process: str
   get-name   |  Gets the name of the process from PID  |  pid: int
+  locate     |  Searches file system for given item    |  search_item: str
   '''
   # they are accurate to the functions arguments
   command_map: dict = {
@@ -113,9 +117,9 @@ class Globals:
     "dupe":            29,             # * Duplicate a file or directory
     "get-pid":         30,             # * Prints process id from process name
     "get-name":        31,             # * Prints the name of the process from PID
-
-    "locate":          32,             # Loops file system until file is found
+    "locate":          32,             # * Loops file system until file is found
     "source":          33,             # * Run commands from a file '.'
+
     "duration":        34              # Measure total command / program run time
   }
 
@@ -274,6 +278,9 @@ class Helper:
 
         case 'get-name' | 'getname':
           print(Helper.get_name(cmd_list[1]), end='\n')
+
+        case 'locate':
+          Commands.locate(cmd_list[1])
 
         # ----- Blank Input and Wildcard ----- #
         case '' | '#':
@@ -775,16 +782,23 @@ class Commands:
       if '(' and ')' in file_path:
         par_start: int = file_path.find('(')
         par_end: int = file_path.find(')')
-        file_name: str = file_name[:par_start] + file_name[file_path.find('.'):]
-        par_num: int = int(
+        digit_check: str = str(
           file_path[par_start:par_end].replace('(', '').replace(')', '')
         )
-        destination_path: str = f'{cur_dir}/{file_name}({par_num + 1}){file_ext}'
 
+        if digit_check.isdigit():
+          file_name: str = file_name[:par_start] + file_name[file_path.find('.'):]
+          par_num: int = int(
+            file_path[par_start:par_end].replace('(', '').replace(')', '')
+          )
+          destination_path: str = f'{cur_dir}/{file_name}({par_num + 1}){file_ext}'
+
+        else:
+          destination_path: str = f'{cur_dir}/{file_name}(1){file_ext}'
       else:
         destination_path: str = f'{cur_dir}/{file_name}(1){file_ext}'
-    destination_path: str = Helper.format_file_path(destination_path, False)
 
+    destination_path: str = Helper.format_file_path(destination_path, False)
     if os.path.exists(destination_path):
       print(f'Destination "{destination_path}" already exists.')
       return Globals.exit_code
@@ -796,6 +810,63 @@ class Commands:
         shutil.copytree(source_path, destination_path)
     else:
       print(f'File: "{source_path}" doesnt exist.')
+      return Globals.exit_code
+
+  @staticmethod
+  def locate(search_item: str) -> None:
+    search_item: str = Helper.format_file_path(search_item, False)
+    files_iterated: int = 0
+    dirs_iterated: int = 0
+
+    if '/' in search_item:
+      item_list: list = search_item.split('/')
+      search_dir: str = '/'.join(item_list[:-1])
+      item_name: str = item_list[-1]
+      result: list = []
+      print(f'Searching base directory "{search_dir}" for "{item_name}"')
+      for root, dirs, files in os.walk(search_dir):
+        for f in files:
+          files_iterated += 1
+          if f == item_name:
+            result.append(f'{root}/{f}'.replace('\\', '/'))
+        for d in dirs:
+          dirs_iterated += 1
+          if d == item_name:
+            result.append(f'{root}/{d}'.replace('\\', '/'))
+
+    else:
+      result: list = []
+      if 'linux' in Globals.platform:
+        base_dir: str = '/'
+      else:
+        base_dir: str = 'C:'
+      print(f'Searching base directory "{base_dir}" for "{search_item}"')
+      for root, dirs, files in os.walk('/'):
+        for f in files:
+          files_iterated += 1
+          if f == search_item:
+            result.append(f'{root}/{f}'.replace('\\', '/'))
+        for d in dirs: 
+          dirs_iterated += 1
+          if d == search_item:
+            result.append(f'{root}/{d}'.replace('\\', '/'))
+
+    if len(result) != 0:
+      print(f'Files iterated: {files_iterated}\nDirectors iterated: {dirs_iterated}')
+      print('---------------------------------------------')
+      if len(result) > 1:
+        ticker: int = 0
+        for item in result:
+          ticker += 1
+          if ticker > 3:
+            print(item, end=', ')
+          else:
+            print(item, end='\n')
+      else:
+        print(f'Located items path: {"".join(result)}')
+      print('---------------------------------------------')
+    else:
+      print(f'No items found under the name {search_item}.')
       return Globals.exit_code
 
   @staticmethod
