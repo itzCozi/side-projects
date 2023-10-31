@@ -14,6 +14,8 @@ from colorama import Fore, Back, Style
 
 # CODE
 '''
+* Make sure optional parameters are specifed in the
+functions doc-string EX: output_path (str, optional)
 * All variable declarations must be type hinted EX: num: int = 0
 * All paths use '/' to separate dirs instead of '\' like windows
 * If a function has parameters each variable must have specified types
@@ -33,9 +35,6 @@ https://www.google.com/search?q=all+helpful+linux+commands&rlz=1CAHTBP_enUS1079&
 
 * If search_item == cur or current set search_dir to
 Helper.get_current_directory()
-* Make sure optional parameters are specifed in the
-functions doc-string EX: output_path (str, optional)
-* ^^^ ADD THIS TODO ABOVE TO THE CODE RULES ^^^
 * Add help command for all commands
 * COMPILE TO .EXE
 '''
@@ -971,9 +970,9 @@ class Commands:
 
     if usr_confirm == 'yes' or usr_confirm == 'y':
       if 'linux' in Globals.platform:
-        os.system('sudo shutdown -h now')
+        subprocess.call('sudo shutdown -h now')
       else:
-        os.system('shutdown /s')
+        subprocess.call('shutdown /s')
     else:
       print(f'Cancelling shutdown, "{usr_confirm}" is not equal to "y" or "yes".')
       return Globals.exit_code
