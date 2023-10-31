@@ -31,13 +31,16 @@ functions doc-string EX: output_path (str, optional)
 
 # TODO
 '''
-COMMAND REFRENCES
----------------------------------------------------------------------------
+COMMAND REFERENCES
+------------------------------------------------------------
 https://ss64.com/bash/
 https://www.google.com/search?q=all+helpful+linux+commands&rlz=1CAHTBP_enUS1079&oq=all+helpful+linux+co&gs_lcrp=EgZjaHJvbWUqBwgBECEYoAEyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRigATIKCAQQIRgWGB0YHjIKCAUQIRgWGB0YHtIBCDk3NjNqMWo3qAIAsAIA&sourceid=chrome&ie=UTF-8&safe=active&ssui=on
----------------------------------------------------------------------------
+------------------------------------------------------------
 
-* Look over all arguments in help_message doc-string
+* Add a auto install requirements using the help of my
+module error catcher in Helper repo
+* Add password zip command called 'p-zip' (pzip) 
+and 'p-unzip' (punzip) using pyminizip
 * Add help command for all commands
 * COMPILE TO .EXE
 '''
@@ -49,43 +52,43 @@ class Globals:
   platform: str = sys.platform
   invaild_char_list: list = list('/\\:*?"<>|')
   help_message: str = '''
-      Command          Description          Arguments
+    Command              Description                     Arguments
 
-  cd         |  Change directory from current dir        |  path: str
-  ls         |  Lists all items in the current dir       |  N/A
-  pwd        |  Print the current working directory      |  N/A
-  echo       |  Output all characters to console         |  message: [str]
-  clear      |  Clear the whole terminal to blank        |  N/A
-  touch      |  Create a new file from current dir       |  file_name: str
-  rm         |  Delete a file                            |  file_list: [str]
-  mkdir      |  Make a new directory                     |  dir_name_list: [str]
-  size       |  Output the size of the file              |  file_name_list: [str]
-  cat        |  Print the contents of the file           |  file_name: str
-  kill       |  Kill a process by name                   |  process: str
-  user       |  Prints the current user                  |  N/A
-  mov        |  Move a file or dir to a new path         |  source_path: str, destination_path: str
-  run        |  Open a file using the native program     |  file_path: str
-  rename     |  Rename a file or dir                     |  target_file: str, new_name: str
-  sleep      |  Stalls for a duration of seconds         |  duration: int
-  sum        |  Prints hash of a file to terminal        |  file_name: str
-  uptime     |  Outputs the current uptime               |  N/A
-  date       |  Print the current date                   |  N/A
-  time       |  Print the current time                   |  N/A
-  info       |  Outputs info about the item              |  file_path: str
-  dir        |  Briefly prints all items in a dir        |  directory: str
-  help       |  Prints this menu                         |  N/A
-  calc       |  A simple calculator                      |  expression: str
-  source     |  Run commands from a file                 |  file_path: str
-  zip        |  Zip's a file or directory                |  target: str, zip_name: str, output_path: str
-  unzip      |  Unzips a .zip file                       |  file_path: str
-  genID      |  Prints a randomly generated ID           |  N/A
-  shutdown   |  Shuts down computer                      |  N/A
-  dupe       |  Duplicates a file or directory           |  source_path: str, destination_path: str
-  get-pid    |  Prints process id from process name      |  process: str
-  get-name   |  Gets the name of the process from PID    |  pid: int
-  locate     |  Searches file system for given item      |  search_item: str
-  duration   |  Measure total command / .exe run time    |  command: [str]
-  download   |  Downloads a file from URL to a directory |  url: str, out_path: str
+  cd         |  Change directory from current dir         |  path: str
+  ls         |  Lists all items in the current dir        |  N/A
+  pwd        |  Print the current working directory       |  N/A
+  echo       |  Output all characters to console          |  message: [str]
+  clear      |  Clear the whole terminal to blank         |  N/A
+  touch      |  Create a new file from current dir        |  file_name: str
+  rm         |  Delete a file                             |  file_list: [str]
+  mkdir      |  Make a new directory                      |  dir_name_list: [str]
+  size       |  Output the size of the file               |  file_name_list: [str]
+  cat        |  Print the contents of the file            |  file_name: str
+  kill       |  Kill a process by name                    |  process: str
+  user       |  Prints the current user                   |  N/A
+  mov        |  Move a file or dir to a new path          |  source_path: str, destination_path: str
+  run        |  Open a file using the native program      |  file_path: str
+  rename     |  Rename a file or dir                      |  target_file: str, new_name: str
+  sleep      |  Stalls for a duration of seconds          |  duration: int
+  sum        |  Prints hash of a file to terminal         |  file_name: str
+  uptime     |  Outputs the current uptime                |  N/A
+  date       |  Print the current date                    |  N/A
+  time       |  Print the current time                    |  N/A
+  info       |  Outputs info about the item               |  file_path: str
+  dir        |  Briefly prints all items in a dir         |  directory: str
+  help       |  Prints this menu                          |  N/A
+  calc       |  A simple calculator                       |  expression: str
+  source     |  Run commands from a file                  |  file_path: str
+  zip        |  Zip's a file or directory                 |  target: str, zip_name: str, output_path: str
+  unzip      |  Unzips a .zip file                        |  file_path: str
+  genID      |  Prints a randomly generated ID            |  N/A
+  shutdown   |  Shuts down computer                       |  N/A
+  dupe       |  Duplicates a file or directory            |  source_path: str, destination_path: str
+  get-pid    |  Prints process id from process name       |  process: str
+  get-name   |  Gets the name of the process from PID     |  pid: int
+  locate     |  Searches file system for given item       |  search_item: str
+  duration   |  Measure total command / .exe run time     |  command: [str]
+  download   |  Downloads a file from URL to a directory  |  url: str, out_path: str
   '''
   # they are accurate to the functions arguments
   command_map: dict = {
@@ -571,7 +574,7 @@ class Commands:
     directory: str = Helper.get_current_directory()
     dir_items: list = os.listdir(directory)
     ticker: int = 0
-    print('---------------------------------------------')
+    print('------------------------------------------------------------')
     for file in dir_items:
       ticker += 1
       if os.path.isdir(file):
@@ -584,7 +587,7 @@ class Commands:
       if ticker == 4 or dir_items.index(file) + 1 == len(dir_items):
         print(f'{color}{file}{Style.RESET_ALL}')
         ticker: int = 0
-    print('---------------------------------------------')
+    print('------------------------------------------------------------')
 
   @staticmethod
   def rm(file_list: list) -> None:
@@ -838,6 +841,10 @@ class Commands:
       search_item (str): The file or directory to look for
     """
     search_item: str = Helper.format_file_path(search_item, False)
+    if 'linux' in Globals.platform:
+      base_dir: str = '/'
+    else:
+      base_dir: str = 'C:'
     files_iterated: int = 0
     dirs_iterated: int = 0
 
@@ -851,43 +858,34 @@ class Commands:
         for f in files:
           files_iterated += 1
           if f == item_name:
-            result.append(f'{root}/{f}'.replace('\\', '/'))
+            result.append(f'{base_dir}{root}/{f}'.replace('\\', '/'))
         for d in dirs:
           dirs_iterated += 1
           if d == item_name:
-            result.append(f'{root}/{d}'.replace('\\', '/'))
+            result.append(f'{base_dir}{root}/{d}'.replace('\\', '/'))
 
     else:
       result: list = []
-      if 'linux' in Globals.platform:
-        base_dir: str = '/'
-      else:
-        base_dir: str = 'C:'
       print(f'Searching base directory "{base_dir}" for "{search_item}"')
       for root, dirs, files in os.walk('/'):
         for f in files:
           files_iterated += 1
           if f == search_item:
-            result.append(f'{root}/{f}'.replace('\\', '/'))
+            result.append(f'{base_dir}{root}/{f}'.replace('\\', '/'))
         for d in dirs: 
           dirs_iterated += 1
           if d == search_item:
-            result.append(f'{root}/{d}'.replace('\\', '/'))
+            result.append(f'{base_dir}{root}/{d}'.replace('\\', '/'))
 
     if len(result) != 0:
       print(f'Files iterated: {files_iterated}\nDirectors iterated: {dirs_iterated}')
-      print('---------------------------------------------')
+      print('------------------------------------------------------------')
       if len(result) > 1:
-        ticker: int = 0
         for item in result:
-          ticker += 1
-          if ticker > 3:
-            print(item, end=', ')
-          else:
-            print(item, end='\n')
+          print(item)
       else:
-        print(f'Located items path: {"".join(result)}')
-      print('---------------------------------------------')
+        print(f'Located item path: "{"".join(result)}"')
+      print('------------------------------------------------------------')
     else:
       print(f'No items found under the name {search_item}.')
       return Globals.exit_code
