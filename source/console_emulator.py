@@ -8,6 +8,7 @@ import random
 import ctypes
 import signal
 import shutil
+import socket
 import hashlib
 import requests
 import subprocess
@@ -89,6 +90,8 @@ class Globals:
   locate     |  Searches file system for given item       |  search_item: str
   duration   |  Measure total command / .exe run time     |  command: [str]
   download   |  Downloads a file from URL to a directory  |  url: str, out_path: str
+  host       |  Outputs current user's host name          |  N/A
+  myip       |  Prints current IP address to console      |  N/A
   '''
   # they are accurate to the functions arguments
   command_map: dict = {
@@ -127,7 +130,9 @@ class Globals:
     "locate":          32,             # * Loops file system until file is found
     "source":          33,             # * Run commands from a file '.'
     "duration":        34,             # * Measure total command / program run time
-    "download":        35              # * Downloads a file to a destination
+    "download":        35,             # * Downloads a file to a destination
+    "host":            36,             # * Prints hostname
+    "myip":            37              # * Prints user's IP
   }
 
 
@@ -294,6 +299,12 @@ class Helper:
 
         case 'download':
           Commands.download(cmd_list[1], cmd_list[2])
+
+        case 'host':
+          Commands.host()
+
+        case 'myip' | 'my-ip':
+          Commands.myip()
 
         # ----- Blank Input and Wildcard ----- #
         case '' | '#':
@@ -694,16 +705,20 @@ class Commands:
       print()
 
   @staticmethod
-  def kill(process: str) -> None:
+  def kill(process: str | int) -> None:
     """
     Kills a process
 
     Args:
-      process (str): The target processes name
+      process (str | int): The target processes name or PID
     """
     if '.exe' in process:
       process: str = process[:-4]
-    pid_list: list = Helper.get_pid(process)
+    if not process.isdigit():
+      pid_list: list = Helper.get_pid(process)
+
+    else:
+      pid_list: list = [process]
     if pid_list is None:
       return Globals.exit_code
 
@@ -1024,6 +1039,23 @@ class Commands:
       return Globals.exit_code
 
   # ----- Smaller Functions ----- #
+
+  @staticmethod
+  def host() -> None:
+    """
+    Prints user's host name
+    """
+    host_name: str = socket.gethostname()
+    print(host_name)
+
+  @staticmethod
+  def myip() -> None:
+    """
+    Prints user's IP address
+    """
+    host_name: str = socket.gethostname()
+    ip: str = socket.gethostbyname(host_name)
+    print(ip)
 
   @staticmethod
   def duration(command: list) -> None:
