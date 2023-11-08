@@ -30,9 +30,6 @@ class Vars:  # Variable container
   platform = sys.platform
   DEV_MODE = True
   exit_code = None
-
-
-class Globals:
   cycle_count = 0
   clear_line = '\x1b[2K'  # This just clears the line
   chat_key = 't'  # Key bound to global chat (usually T or Y)
@@ -475,14 +472,14 @@ def loop():
   for i in range(1, 6):
     print(f'Loop starting in {i}...\r', end='')
     time.sleep(1)
-  print(Globals.clear_line, end='')
+  print(Vars.clear_line, end='')
   print('Started press \'alt\' to halt.')
 
   while True:
     # Key that will be pressed
-    key = random.choice(Globals.key_list)
-    mouse = random.choice(Globals.mouse_list)
-    print(f'Inputs sent: {Globals.cycle_count}\r', end='')
+    key = random.choice(Vars.key_list)
+    mouse = random.choice(Vars.mouse_list)
+    print(f'Inputs sent: {Vars.cycle_count}\r', end='')
 
     if pykey.is_pressed('win'):
       print('Windows key pressed, stalling.')
@@ -492,7 +489,7 @@ def loop():
 
     Keyboard.pressAndReleaseKey(mouse)
     Keyboard.pressAndReleaseKey(key)
-    Globals.cycle_count += 1
+    Vars.cycle_count += 1
     time.sleep(1)
 
   print('Loop halted, press \'ctrl\' to restart.')

