@@ -68,13 +68,13 @@ class Keyboard:
   # Reference: msdn.microsoft.com/en-us/library/dd375731
   # Each key value is 4 chars long and formatted in hexadecimal
   vk_codes: dict = {
-    # --- Mouse ---
+    #  --- Mouse ---  #
     "left_mouse": 0x01,
     "right_mouse": 0x02,
     "middle_mouse": 0x04,
     "mouse_button1": 0x05,
     "mouse_button2": 0x06,
-    # --- Control Keys ---
+    #  --- Control Keys ---  #
     "win": 0x5B,  # Left Windows key
     "select": 0x29,
     "pg_down": 0x21,
@@ -96,12 +96,12 @@ class Keyboard:
     "zoom": 0xFB,
     "num_lock": 0x90,
     "scroll_lock": 0x91,
-    # --- OEM Specific ---
+    #  --- OEM Specific ---  #
     "plus": 0xBB,
     "comma": 0xBC,
     "minus": 0xBD,
     "period": 0xBE,
-    # --- Media ---
+    #  --- Media ---  #
     "vol_mute": 0xAD,
     "vol_down": 0xAE,
     "vol_up": 0xAF,
@@ -109,12 +109,12 @@ class Keyboard:
     "prev": 0xB1,
     "pause": 0xB2,
     "play": 0xB3,
-    # --- Arrow Keys ---
+    #  --- Arrow Keys ---  #
     "left": 0x25,
     "up": 0x26,
     "right": 0x27,
     "down": 0x28,
-    # --- Function Keys ---
+    #  --- Function Keys ---  #
     "f1": 0x70,
     "f2": 0x71,
     "f3": 0x72,
@@ -130,7 +130,7 @@ class Keyboard:
     "f13": 0x7C,
     "f14": 0x7D,
     "f15": 0x7E,
-    # --- Keypad ---
+    #  --- Keypad ---  #
     "pad_0": 0x60,
     "pad_1": 0x61,
     "pad_2": 0x62,
@@ -141,14 +141,14 @@ class Keyboard:
     "pad_7": 0x67,
     "pad_8": 0x68,
     "pad_9": 0x69,
-    # --- Symbols ---
+    #  --- Symbols ---  #
     "multiply": 0x6A,
     "add": 0x6B,
     "separator": 0x6C,
     "subtract": 0x6D,
     "decimal": 0x6E,
     "divide": 0x6F,
-    # --- Alphanumerical ---
+    #  --- Alphanumerical ---  #
     "0": 0x30,
     "1": 0x31,
     "2": 0x32,
@@ -447,6 +447,7 @@ class Keyboard:
         Keyboard.pressKey('shift')
       else:
         Keyboard.releaseKey('shift')
+
       key_code = Keyboard._lookup(char.lower())  # All dict entry's all lowercase
       x = Keyboard.INPUT(
         type=Keyboard.INPUT_KEYBOARD,
