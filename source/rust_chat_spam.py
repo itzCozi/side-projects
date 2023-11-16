@@ -644,7 +644,7 @@ class Spammer:
     Keyboard.pressAndReleaseKey(0x0D)
 
   def loop():
-    for i in range(1, 6):
+    for i in reversed(range(1, 6)):
       print(f'Loop starting in {i}...\r', end='')
       time.sleep(1)
     print('\x1b[2K', end='')
