@@ -581,6 +581,7 @@ class Keyboard:
       Keyboard._Vars.user32.SendInput(1, ctypes.byref(y), ctypes.sizeof(y))
     Keyboard.releaseKey('shift')  # Incase it is not already released
 
+
 class Spammer:
 
   class _Vars:
