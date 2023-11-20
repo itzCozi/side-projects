@@ -2,6 +2,7 @@
 # PY-VERSION: 3.12+
 # GITHUB: https://github.com/itzCozi/Py-Keyboard-Class
 
+import os
 import sys
 import time
 import ctypes
@@ -585,9 +586,10 @@ class Keyboard:
 class Spammer:
 
   class _Vars:
-    chat_key: str = 't'  # Key used to enter global chat
-    interval: int | float = 0.5  # Time to wait before next message
-    message: str = None  # Set to a string or None to be asked at runtime
+    chat_key: str = 't'           # Key used to enter global chat
+    interval: int | float = 3.5   # Time to wait before next message
+    message: str = None           # Set to a string or None to be asked at runtime
+    spam_count: int = 0
 
   def arg_handler() -> None:
     try:
@@ -601,17 +603,19 @@ class Spammer:
       pass
 
     try:
+      digits: list = list('1234567890')
       if arg1 == '-int':
-        if not arg2.isnumeric():
-          print('ERROR: Input interval must be a number like 60 for a minute.')
-          sys.exit(1)
-        Spammer._Vars.interval = int(arg2)
+        for char in arg2:
+          if not char in digits and char != '.':
+            print('ERROR: Input interval must be a number like 60 for a minute.')
+            sys.exit(1)
+        Spammer._Vars.interval = arg2
         print(f'Input interval set to {arg2}.')
 
       else:
         print(f'ERROR: The given argument {arg1} is not recognized.')
         sys.exit(1)
-    except Exception:
+    except Exception as e:
       pass  # Pass cuz arguments are optional
 
   def spam_message() -> None:
@@ -621,6 +625,7 @@ class Spammer:
       '*', '(', ')', '+', '<', '>', '_'
     ]
 
+    Spammer._Vars.spam_count += 1
     Keyboard.pressAndReleaseKey(Spammer._Vars.chat_key)
     time.sleep(0.5)
 
@@ -648,17 +653,17 @@ class Spammer:
     for i in reversed(range(1, 6)):
       print(f'Loop starting in {i}...\r', end='')
       time.sleep(1)
-    print('\x1b[2K', end='')
+    os.system('cls')
 
     while True:
-      # Key that will be pressed
+      print(f'Spam Count: {Spammer._Vars.spam_count}\r', end='')
       if pykey.is_pressed('alt'):
         break
 
       Spammer.spam_message()
       time.sleep(Spammer._Vars.interval)
 
-    print('Loop halted, press \'ctrl\' to restart.')
+    print('\nLoop halted, press \'ctrl\' to restart.')
     time.sleep(2)
     while True:
       if pykey.is_pressed('ctrl'):
@@ -671,6 +676,8 @@ Spammer.arg_handler()
 if Spammer._Vars.message is None:
   request: str = 'Please enter the message to spam: '
   Spammer._Vars.message = str(input(request))
-  print()  # Print newline
+  print('Press & hold "Alt" to halt the program \
+  \nThen press "Ctrl" to reactivate the loop.\n'
+  )
 
 Spammer.loop()
