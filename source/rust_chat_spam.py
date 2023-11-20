@@ -7,37 +7,18 @@ import sys
 import time
 import ctypes
 import win32api
-from win32con import *
-from typing import Any
 import keyboard as pykey
+from typing import *
+from win32con import *
 from ctypes import wintypes
 from win32api import STD_INPUT_HANDLE
 from win32console import (
-  GetStdHandle,
-  KEY_EVENT,
-  ENABLE_ECHO_INPUT,
-  ENABLE_LINE_INPUT,
-  ENABLE_PROCESSED_INPUT
+  GetStdHandle, KEY_EVENT, ENABLE_ECHO_INPUT,
+  ENABLE_LINE_INPUT, ENABLE_PROCESSED_INPUT
 )
 
 
 class Keyboard:
-  """
-  A class for controlling and sending keystrokes
-
-  -----------------------------------------
-  |    function            description    |
-  |---------------------------------------|
-  | scrollMouse: Scrolls the mouse wheel  |
-  | pressMouse: Sends a VK input to mouse |
-  | releaseMouse: Halt VK signal          |
-  | pressKey: Presses given key hex code  |
-  | releaseKey: Stop given VK input       |
-  | pressAndReleaseKey: N/A               |
-  | pressAndReleaseMouse: N/A             |
-  | keyboardWrite: Sends vk inputs        |
-  -----------------------------------------
-  """
 
   class _Vars:  # Variable container
 
@@ -56,7 +37,7 @@ class Keyboard:
         print('UNKNOWN: An unknown error was encountered.')
       return None
 
-    exit_code = None
+    exit_code: None = None
     INPUT_MOUSE: int = 0
     INPUT_KEYBOARD: int = 1
     MAPVK_VK_TO_VSC: int = 0
@@ -222,70 +203,87 @@ class Keyboard:
     "\n": 0x0D
   }
 
-  # C struct declarations, these are not statically type hinted
-  wintypes.ULONG_PTR = wintypes.WPARAM
+  # C struct declarations, recently added type hinting
+  wintypes.ULONG_PTR: type[wintypes.WPARAM] = wintypes.WPARAM
   global MOUSEINPUT, KEYBDINPUT
 
   class MOUSEINPUT(ctypes.Structure):
-    _fields_ = (
-      ('dx', wintypes.LONG),
-      ('dy', wintypes.LONG),
-      ('mouseData', wintypes.DWORD),
-      ('dwFlags', wintypes.DWORD),
-      ('time', wintypes.DWORD),
-      ('dwExtraInfo', wintypes.ULONG_PTR)
+    _fields_: tuple[
+      tuple[Literal['dx'], wintypes.LONG],                  # A
+      tuple[Literal['dy'], wintypes.LONG],                  # B
+      tuple[Literal['mouseData'], wintypes.DWORD],          # C
+      tuple[Literal['dwFlags'], wintypes.DWORD],            # D
+      tuple[Literal['time'], wintypes.DWORD],               # E
+      tuple[Literal['dwExtraInfo'], type[wintypes.WPARAM]]  # F
+    ] = (
+      ('dx', wintypes.LONG),                                # A
+      ('dy', wintypes.LONG),                                # B
+      ('mouseData', wintypes.DWORD),                        # C
+      ('dwFlags', wintypes.DWORD),                          # D
+      ('time', wintypes.DWORD),                             # E
+      ('dwExtraInfo', wintypes.ULONG_PTR)                   # F
     )
 
   class KEYBDINPUT(ctypes.Structure):
-    _fields_ = (
-      ('wVk', wintypes.WORD),
-      ('wScan', wintypes.WORD),
-      ('dwFlags', wintypes.DWORD),
-      ('time', wintypes.DWORD),
-      ('dwExtraInfo', wintypes.ULONG_PTR)
+    _fields_: tuple[
+      tuple[Literal['wVk'], wintypes.WORD],                 # A
+      tuple[Literal['wScan'], wintypes.WORD],               # B
+      tuple[Literal['dwFlags'], wintypes.DWORD],            # C
+      tuple[Literal['time'], wintypes.DWORD],               # D
+      tuple[Literal['dwExtraInfo'], type[wintypes.WPARAM]]  # E
+    ] = (
+      ('wVk', wintypes.WORD),                               # A
+      ('wScan', wintypes.WORD),                             # B
+      ('dwFlags', wintypes.DWORD),                          # C
+      ('time', wintypes.DWORD),                             # D
+      ('dwExtraInfo', wintypes.ULONG_PTR)                   # E
     )
 
-    def __init__(self, *args, **kwds) -> None:
+    def __init__(
+      self: Self,
+      *args: tuple[Any, ...],
+      **kwds: dict[str, Any]
+    ) -> None:
+      # *args & **kwds are confusing asf: https://youtu.be/4jBJhCaNrWU?si=0zZQqGuMaR5ulLNb
       super(KEYBDINPUT, self).__init__(*args, **kwds)
-      # some programs use the scan code even if KEYEVENTF_SCANCODE
-      # isn't set in dwFflags, so try to map the right code
       if not self.dwFlags & Keyboard._Vars.KEYEVENTF_UNICODE:
-        self.wScan = Keyboard._Vars.user32.MapVirtualKeyExW(
+        self.wScan: Any = Keyboard._Vars.user32.MapVirtualKeyExW(
           self.wVk, Keyboard._Vars.MAPVK_VK_TO_VSC, 0
         )
 
   class INPUT(ctypes.Structure):
 
     class _INPUT(ctypes.Union):
-      _fields_ = (('ki', KEYBDINPUT), ('mi', MOUSEINPUT))
+      _fields_: tuple[
+        tuple[Literal['ki'], type[KEYBDINPUT]], 
+        tuple[Literal['mi'], type[MOUSEINPUT]]
+      ] = (('ki', KEYBDINPUT), ('mi', MOUSEINPUT))
 
-    _anonymous_ = ('_input', )
-    _fields_ = (('type', wintypes.DWORD), ('_input', _INPUT))
+    _anonymous_: tuple[Literal['_input']] = ('_input', )
+    _fields_: tuple[
+      tuple[Literal['type'], wintypes.DWORD], 
+      tuple[Literal['_input'], type[_INPUT]]
+    ] = (('type', wintypes.DWORD), ('_input', _INPUT))
 
-  LPINPUT = ctypes.POINTER(INPUT)
+  LPINPUT: Any = ctypes.POINTER(INPUT)
 
   # Helpers
 
   @staticmethod
-  def _checkCount(result, func, args) -> Any:
+  def _checkCount(result: Any, func: Any, args: Any) -> Any:
     if result == 0:
       raise ctypes.WinError(ctypes.get_last_error())
     return args
 
   @staticmethod
-  def _lookup(key) -> int | bool:
+  def _lookup(key: Any) -> int | bool:
     if key in Keyboard.vk_codes:
       return Keyboard.vk_codes.get(key)
     else:
       return False
 
   @staticmethod
-  def MOUSESCROLL(
-    axis: str,
-    dist: int,
-    x: int = 0,
-    y: int = 0
-  ) -> None | bool:
+  def _MOUSESCROLL(axis: str, dist: int, x: int = 0, y: int = 0) -> None | bool:
     if axis == 'v' or axis == 'vertical':
       win32api.mouse_event(MOUSEEVENTF_WHEEL, x, y, dist, 0)
     elif axis == 'h' or axis == 'horizontal':
@@ -293,14 +291,30 @@ class Keyboard:
     else:
       return False
 
-  _Vars.user32.SendInput.errcheck = _checkCount
-  _Vars.user32.SendInput.argtypes = (
-    wintypes.UINT,  # nInputs
-    LPINPUT,  # pInputs
-    ctypes.c_int  # cbSize
-  )
-
   # Functions (most people will only use these)
+
+  @staticmethod
+  def getKeyState(key_code: str | int) -> int:
+    """
+    Returns the given keys current state
+
+    Args:
+      key_code (str | int): The key to be checked for state
+
+    Returns:
+      int: '0' if the key is not pressed and '1' if it is
+    """
+    if not isinstance(key_code, str | int):
+      Keyboard._Vars.error(error_type='p', var='key_code', type='integer or string')
+      return Keyboard._Vars.exit_code
+
+    if Keyboard._lookup(key_code) is not False:
+      key_code: int = Keyboard._lookup(key_code)
+    elif key_code not in Keyboard.vk_codes and key_code not in Keyboard.vk_codes.values():
+      Keyboard._Vars.error(error_type='r', runtime_error='given key code is not valid')
+      return Keyboard._Vars.exit_code
+
+    return Keyboard._Vars.user32.GetKeyState(key_code)
 
   @staticmethod
   def scrollMouse(direction: str, amount: int, dx: int = 0, dy: int = 0) -> None:
@@ -337,13 +351,13 @@ class Keyboard:
       return Keyboard._Vars.exit_code
 
     if direction == 'up':
-      Keyboard.MOUSESCROLL('vertical', amount, dx, dy)
+      Keyboard._MOUSESCROLL('vertical', amount, dx, dy)
     elif direction == 'down':
-      Keyboard.MOUSESCROLL('vertical', -amount, dx, dy)
+      Keyboard._MOUSESCROLL('vertical', -amount, dx, dy)
     elif direction == 'right':
-      Keyboard.MOUSESCROLL('horizontal', amount, dx, dy)
+      Keyboard._MOUSESCROLL('horizontal', amount, dx, dy)
     elif direction == 'left':
-      Keyboard.MOUSESCROLL('horizontal', -amount, dx, dy)
+      Keyboard._MOUSESCROLL('horizontal', -amount, dx, dy)
 
   @staticmethod
   def pressMouse(mouse_button: str | int) -> None:
@@ -534,54 +548,6 @@ class Keyboard:
     Keyboard.pressMouse(original_name)
     Keyboard.releaseMouse(original_name)
 
-  @staticmethod
-  def keyboardWrite(source_str: str) -> None:
-    """
-    Writes by sending virtual inputs
-
-    Args:
-      source_str (str): The string to be inputted on the keyboard, all
-      keys in the 'Alphanumerical' section of vk_codes dict are valid
-    """
-    if not isinstance(source_str, str):
-      Keyboard._Vars.error(error_type='p', var='string', type='string')
-      return Keyboard._Vars.exit_code
-
-    str_list: list = list(source_str)
-    shift_alternate: list = [
-      '|', '~', '?', ':', '{', '}', '\"', '!', '@', '#', '$', '%', '^', '&',
-      '*', '(', ')', '+', '<', '>', '_'
-    ]
-    for char in str_list:
-      if char not in Keyboard.vk_codes and not char.isupper():
-        Keyboard._Vars.error(
-          error_type='r',
-          runtime_error=f'character: {char} is not in vk_codes map'
-        )
-        return Keyboard._Vars.exit_code
-
-      if char.isupper() or char in shift_alternate:
-        Keyboard.pressKey('shift')
-      else:
-        Keyboard.releaseKey('shift')
-
-      key_code: int = Keyboard._lookup(char.lower())  # All dict entry's all lowercase
-      x: Keyboard.INPUT = Keyboard.INPUT(
-        type=Keyboard._Vars.INPUT_KEYBOARD,
-        ki=KEYBDINPUT(wVk=key_code)
-      )
-      Keyboard._Vars.user32.SendInput(1, ctypes.byref(x), ctypes.sizeof(x))
-
-      y: Keyboard.INPUT = Keyboard.INPUT(
-        type=Keyboard._Vars.INPUT_KEYBOARD,
-        ki=KEYBDINPUT(
-          wVk=key_code,
-          dwFlags=Keyboard._Vars.KEYEVENTF_KEYUP
-        )
-      )
-      Keyboard._Vars.user32.SendInput(1, ctypes.byref(y), ctypes.sizeof(y))
-    Keyboard.releaseKey('shift')  # Incase it is not already released
-
 
 class Spammer:
 
@@ -590,6 +556,7 @@ class Spammer:
     interval: int | float = 3.5   # Time to wait before next message
     message: str = None           # Set to a string or None to be asked at runtime
     spam_count: int = 0
+    digits: list = list('1234567890')
 
   def arg_handler() -> None:
     try:
@@ -603,10 +570,9 @@ class Spammer:
       pass
 
     try:
-      digits: list = list('1234567890')
       if arg1 == '-int':
         for char in arg2:
-          if not char in digits and char != '.':
+          if not char in Spammer._Vars.digits and char != '.':
             print('ERROR: Input interval must be a number like 60 for a minute.')
             sys.exit(1)
         Spammer._Vars.interval = arg2
@@ -619,6 +585,9 @@ class Spammer:
       pass  # Pass cuz arguments are optional
 
   def spam_message() -> None:
+    if Keyboard.getKeyState('caps') == 1:
+      Keyboard.pressAndReleaseKey('caps')
+
     str_list: list = list(Spammer._Vars.message)
     shift_alternate: list = [
       '|', '~', '?', ':', '{', '}', '\"', '!', '@', '#', '$', '%', '^', '&',
@@ -647,7 +616,7 @@ class Spammer:
       Keyboard.releaseKey(key_code)
 
     Keyboard.releaseKey('shift')  # Incase it is not already released
-    Keyboard.pressAndReleaseKey(0x0D)
+    Keyboard.pressAndReleaseKey('en')  # Enter key
 
   def loop():
     for i in reversed(range(1, 6)):
@@ -668,16 +637,32 @@ class Spammer:
     while True:
       if pykey.is_pressed('ctrl'):
         Spammer.loop()
+
+      elif pykey.is_pressed('alt'):
+        Spammer.init_loop()
+
+      elif pykey.is_pressed('alt') and pykey.is_pressed('ctrl'):
+        prompt: str = 'Please enter the time to wait between messages: '
+        new_interval: str = str(input(prompt))
+        for char in new_interval:
+          if not char in Spammer._Vars.digits and char != '.':
+            print('ERROR: Input interval must be a number like 60 for a minute.')
+            sys.exit(1)
+
       time.sleep(0.2)
 
+  def init_loop() -> None:
+    Spammer.arg_handler()
 
-Spammer.arg_handler()
+    if Spammer._Vars.message is None:
+      request: str = 'Please enter the message to spam: '
+      Spammer._Vars.message = str(input(request))
+      print('Press & hold "Alt" to halt the program \
+      \nThen press "Ctrl" to reactivate the loop.\n'
+      )
 
-if Spammer._Vars.message is None:
-  request: str = 'Please enter the message to spam: '
-  Spammer._Vars.message = str(input(request))
-  print('Press & hold "Alt" to halt the program \
-  \nThen press "Ctrl" to reactivate the loop.\n'
-  )
+    Spammer.loop()
 
-Spammer.loop()
+
+# - First Line Ran - #
+Spammer.init_loop()
