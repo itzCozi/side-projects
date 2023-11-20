@@ -553,7 +553,7 @@ class Spammer:
 
   class _Vars:
     chat_key: str = 't'           # Key used to enter global chat
-    interval: int | float = 3.5   # Time to wait before next message
+    interval: float = 4.0         # Time to wait before next message
     message: str = None           # Set to a string or None to be asked at runtime
     spam_count: int = 0
     digits: list = list('1234567890')
@@ -575,7 +575,7 @@ class Spammer:
           if not char in Spammer._Vars.digits and char != '.':
             print('ERROR: Input interval must be a number like 60 for a minute.')
             sys.exit(1)
-        Spammer._Vars.interval = arg2
+        Spammer._Vars.interval = float(arg2)
         print(f'Input interval set to {arg2}.')
 
       else:
@@ -616,7 +616,7 @@ class Spammer:
       Keyboard.releaseKey(key_code)
 
     Keyboard.releaseKey('shift')  # Incase it is not already released
-    Keyboard.pressAndReleaseKey('en')  # Enter key
+    Keyboard.pressAndReleaseKey('enter')  # Enter key
 
   def loop():
     for i in reversed(range(1, 6)):
@@ -625,29 +625,29 @@ class Spammer:
     os.system('cls')
 
     while True:
-      print(f'Spam Count: {Spammer._Vars.spam_count}\r', end='')
+      print(f'Remember: you can press the "Alt" key to stop spamming... \
+      Input Count: {Spammer._Vars.spam_count}\r', end='')
       if pykey.is_pressed('alt'):
         break
+      else:
+        Spammer.spam_message()
+        time.sleep(float(Spammer._Vars.interval))
 
-      Spammer.spam_message()
-      time.sleep(Spammer._Vars.interval)
-
-    print('\nLoop halted, press \'ctrl\' to restart.')
+    print('\nLoop halted, press "ctrl" to restart, or "alt" to change interval.')
     time.sleep(2)
     while True:
       if pykey.is_pressed('ctrl'):
         Spammer.loop()
 
       elif pykey.is_pressed('alt'):
-        Spammer.init_loop()
-
-      elif pykey.is_pressed('alt') and pykey.is_pressed('ctrl'):
         prompt: str = 'Please enter the time to wait between messages: '
-        new_interval: str = str(input(prompt))
-        for char in new_interval:
+        new_interval: int = input(prompt)
+        for char in str(new_interval):
           if not char in Spammer._Vars.digits and char != '.':
             print('ERROR: Input interval must be a number like 60 for a minute.')
             sys.exit(1)
+        Spammer._Vars.interval = float(new_interval)
+        print(f'Input interval set to {Spammer._Vars.interval}.')
 
       time.sleep(0.2)
 
@@ -657,8 +657,11 @@ class Spammer:
     if Spammer._Vars.message is None:
       request: str = 'Please enter the message to spam: '
       Spammer._Vars.message = str(input(request))
-      print('Press & hold "Alt" to halt the program \
-      \nThen press "Ctrl" to reactivate the loop.\n'
+      print(f'The program will spam: {Spammer._Vars.message}\n')
+      print(
+        'Press and hold "Alt" to halt the program, \
+        \nthen press "Ctrl" to reactivate the loop or \
+        \npress "Alt" again to change the interval.\n'
       )
 
     Spammer.loop()
