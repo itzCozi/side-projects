@@ -7,33 +7,38 @@ from typing import *
 
 class Globals:
   database: str = 'keys.db'
+  # EXAMPLE "keys.db"
+  # ------------------------
+  # USER: cozi08, Coop4598
+  # USER: admin, admin
+  # ------------------------
   KEY_MAP: dict = {
-      "BACKSPACE": 8,
-      "TAB": 9,
-      "ENTER": 10,
-      "ESCAPE": 27,
-      "DOWN": 258,
-      "UP": 259,
-      "LEFT": 260,
-      "RIGHT": 261,
-      "HOME": 262,
-      "F1": 265,
-      "F2": 266,
-      "F3": 267,
-      "F4": 268,
-      "F5": 269,
-      "F6": 270,
-      "F7": 271,
-      "F8": 272,
-      "F9": 273,
-      "F10": 274,
-      "F11": 275,
-      "F12": 276,
-      "DELETE": 330,
-      "INSERT": 331,
-      "PAGEDOWN": 338,
-      "PAGEUP": 339,
-      "END": 358,
+    "BACKSPACE": 8,
+    "TAB": 9,
+    "ENTER": 10,
+    "ESCAPE": 27,
+    "DOWN": 258,
+    "UP": 259,
+    "LEFT": 260,
+    "RIGHT": 261,
+    "HOME": 262,
+    "F1": 265,
+    "F2": 266,
+    "F3": 267,
+    "F4": 268,
+    "F5": 269,
+    "F6": 270,
+    "F7": 271,
+    "F8": 272,
+    "F9": 273,
+    "F10": 274,
+    "F11": 275,
+    "F12": 276,
+    "DELETE": 330,
+    "INSERT": 331,
+    "PAGEDOWN": 338,
+    "PAGEUP": 339,
+    "END": 358,
   }
 
 
@@ -77,7 +82,9 @@ class Helper:
     scr.addstr(int(pos[1]), int(pos[0]), msg)
     scr.refresh()
 
-  def slowWrite(scr: _curses.window, text: str, pause: int = 20) -> None:
+  def slowWrite(
+    scr: _curses.window, text: str, pause: int = 20, pos: tuple = (0, 0)
+  ) -> None:
     """
     Wrapper for curses.addstr() which writes the text slowly
 
@@ -86,8 +93,13 @@ class Helper:
       text (str): Text to output
       pause (int): Time to pause
     """
+    x: int = int(pos[1])
+    y: int = int(pos[0])
+    height, width = scr.getmaxyx()
     for i in range(len(text)):
-      scr.addstr(text[i])
+      scr.addstr(x, y, text[i])
+      if y < width: y += 1
+      if y == width: x += 1
       scr.refresh()
       curses.napms(pause)  # Waits the duration of pause in milliseconds
 
@@ -164,25 +176,55 @@ def login() -> bool:
       users[user] = password
 
   scr = Helper.setup()
-  curses.noecho()
-  login_loop = True
+  trys = 0
   stage = 1
-  while login_loop is True:
+  while True:
+    height, width = scr.getmaxyx()
+    header_list = []
+    page_title = ' LOGIN - TERMINAL '
+    for i in range(width - len(page_title)):
+      header_list.append('=')
+    listA = []
+    for i in range(
+      int(round(len(header_list)/2, 0)), 
+      len(header_list)
+    ):
+      listA.append('=')
+      listB = listA.copy()
+    Helper.write(scr, ''.join(listA)+page_title+''.join(listB))
+
     if stage == 1:
-      Helper.centeredWrite(scr, 'LOGIN - TERMINAL')
       Helper.write(scr, 'USER: ', (0, 2))
       user_name_input = Helper.hide_input(scr)
+
       if user_name_input in users:
         stage += 1
+      else:
+        Helper.slowWrite(scr, 'Invalid username.', pause=50, pos=(0, 2))
+        Helper.slowWrite(scr, 'Press any key to continue...', pos=(0, 3))
+        scr.getch()
+
     elif stage == 2:
-      Helper.centeredWrite(scr, 'LOGIN - TERMINAL')
       Helper.write(scr, 'PASS: ', (0, 2))
       user_pass_input = Helper.hide_input(scr)
+
       if user_pass_input in users:
-        break
+        return True
       else:
-        pass  # Else change color to red then wait for a second
+        Helper.slowWrite(scr, 'Invalid password.', pause=50, pos=(0, 2))
+        Helper.slowWrite(scr, 'Press any key to re-enter password...', pos=(0, 3))
+        stage = 3
+        scr.getch()
+
     scr.clear()
+    trys += 1
+    if stage == 3:
+      stage = 2
+    if trys == 4:
+      Helper.slowWrite(scr, 'Too many false entries, force quitting.', pause=50)
+      Helper.slowWrite(scr, 'Press any key to exit...', pos=(0, 1))
+      scr.getch()
+      return False
 
 
 login()
