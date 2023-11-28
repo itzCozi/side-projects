@@ -1,5 +1,6 @@
 # Scrolls automatically on Windows ONLY
 
+import os
 import time
 import keyboard
 import win32api
@@ -46,6 +47,7 @@ def scroll_loop() -> None:
     time.sleep(1)
   print('\x1b[2K', end='')
   print('Started press \'alt\' to halt.')
+  os.popen('start "" https://instagram.com')  # Simple example
 
   while True:
     if keyboard.is_pressed('alt'):
@@ -53,6 +55,7 @@ def scroll_loop() -> None:
     Controller.scrollMouse('down', 15)
     time.sleep(0.1)
 
+  os.system("taskkill /im brave.exe /f")
   print('Loop halted, press \'ctrl\' to restart.')
   time.sleep(2)
   while True:
