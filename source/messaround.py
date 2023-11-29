@@ -165,7 +165,7 @@ class Helper:
     return in_str
 
 
-def login() -> bool:
+def login(test_mode: bool = False) -> bool:
   with open(Globals.database, 'r') as f:
     content: str = f.read()
   users = {}
@@ -206,15 +206,25 @@ def login() -> bool:
         stage += 1
       else:
         message = f'Given user: "{user_name_input}" is INVALID.'
-        Helper.slow_write(scr, message, pause=50, pos=(0, 2))
+        Helper.slow_write(scr, message, pause=80, pos=(0, 2))
         Helper.slow_write(scr, 'Press any key to continue...', pos=(0, 3))
         scr.getch()
 
     elif stage == 2:
+      trys += 1
       Helper.write(scr, 'PASS: ', (0, 2))
       user_pass_input = Helper.hide_input(scr)
 
-      if user_pass_input == expected_pass:
+      if user_pass_input == 'help':
+        if test_mode is True:
+          Helper.slow_write(scr, expected_pass, pause=50, pos=(0, 4))
+          Helper.slow_write(scr, ' | Press any key to continue...', pause=50, pos=(len(expected_pass)+1, 4))
+          stage = 3
+          scr.getch()
+        else:
+          Helper.slow_write(scr, 'ACCESS DENIED', pause=50, pos=(0, 4))
+          scr.getch()
+      elif user_pass_input == expected_pass:
         scr.clear()
         msg = 'ACCESS GRANTED'
         x = width-len(msg)
@@ -222,19 +232,17 @@ def login() -> bool:
         Helper.slow_write(scr, msg, pause=200, pos=(x/2, y))
         return True
       else:
-        Helper.slow_write(scr, f'Invalid password for {user_name_input}.', pause=50, pos=(0, 2))
+        Helper.slow_write(scr, f'Invalid password for {user_name_input}.', pause=80, pos=(0, 2))
         Helper.slow_write(scr, 'Press any key to re-enter password...', pos=(0, 3))
         stage = 3
         scr.getch()
 
     scr.clear()
-    trys += 1
     if stage == 3:
       stage = 2
     if trys == 4:
-      Helper.slow_write(scr, 'Too many false entries, force quitting.', pause=50)
-      Helper.slow_write(scr, 'Press any key to exit...', pos=(0, 1))
-      scr.getch()
+      Helper.slow_write(scr, 'Too many false entries, force quitting.', pause=80)
+      curses.napms(300)
       return False
 
 
