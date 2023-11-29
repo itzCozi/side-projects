@@ -57,7 +57,7 @@ class Helper:
     scr.clear()
     return scr
 
-  def centeredWrite(scr: _curses.window, text: str) -> None:
+  def centered_write(scr: _curses.window, text: str) -> None:
     """
     Writes to the current line but centers the text
 
@@ -82,8 +82,11 @@ class Helper:
     scr.addstr(int(pos[1]), int(pos[0]), msg)
     scr.refresh()
 
-  def slowWrite(
-    scr: _curses.window, text: str, pause: int = 20, pos: tuple = (0, 0)
+  def slow_write(
+    scr: _curses.window,
+    text: str,
+    pause: int = 20,
+    pos: tuple = (0, 0),
   ) -> None:
     """
     Wrapper for curses.addstr() which writes the text slowly
@@ -103,7 +106,7 @@ class Helper:
       scr.refresh()
       curses.napms(pause)  # Waits the duration of pause in milliseconds
 
-  def cursorBlink(scr: _curses.window, duration: int) -> None:
+  def cursor_blink(scr: _curses.window, duration: int) -> None:
     """
     Blinks the cursor twice every second
 
@@ -176,6 +179,7 @@ def login() -> bool:
       users[user] = password
 
   scr = Helper.setup()
+  scr.clear()
   trys = 0
   stage = 1
   while True:
@@ -198,21 +202,28 @@ def login() -> bool:
       user_name_input = Helper.hide_input(scr)
 
       if user_name_input in users:
+        expected_pass = users.get(user_name_input)
         stage += 1
       else:
-        Helper.slowWrite(scr, 'Invalid username.', pause=50, pos=(0, 2))
-        Helper.slowWrite(scr, 'Press any key to continue...', pos=(0, 3))
+        message = f'Given user: "{user_name_input}" is INVALID.'
+        Helper.slow_write(scr, message, pause=50, pos=(0, 2))
+        Helper.slow_write(scr, 'Press any key to continue...', pos=(0, 3))
         scr.getch()
 
     elif stage == 2:
       Helper.write(scr, 'PASS: ', (0, 2))
       user_pass_input = Helper.hide_input(scr)
 
-      if user_pass_input in users:
+      if user_pass_input == expected_pass:
+        scr.clear()
+        msg = 'ACCESS GRANTED'
+        x = width-len(msg)
+        y = height/2
+        Helper.slow_write(scr, msg, pause=200, pos=(x/2, y))
         return True
       else:
-        Helper.slowWrite(scr, 'Invalid password.', pause=50, pos=(0, 2))
-        Helper.slowWrite(scr, 'Press any key to re-enter password...', pos=(0, 3))
+        Helper.slow_write(scr, f'Invalid password for {user_name_input}.', pause=50, pos=(0, 2))
+        Helper.slow_write(scr, 'Press any key to re-enter password...', pos=(0, 3))
         stage = 3
         scr.getch()
 
@@ -221,8 +232,8 @@ def login() -> bool:
     if stage == 3:
       stage = 2
     if trys == 4:
-      Helper.slowWrite(scr, 'Too many false entries, force quitting.', pause=50)
-      Helper.slowWrite(scr, 'Press any key to exit...', pos=(0, 1))
+      Helper.slow_write(scr, 'Too many false entries, force quitting.', pause=50)
+      Helper.slow_write(scr, 'Press any key to exit...', pos=(0, 1))
       scr.getch()
       return False
 
