@@ -63,7 +63,7 @@ class Gunz:
         case '-zip':  # Compress a file or folder with 'zip'
           ...
 
-        case '-gz':  # Compress a file or folder with 'gunzip'
+        case '-gz':  # Compress a file with 'gunzip'
           ...
 
         case '-tb' | '-tarball': # Compress a file or folder with 'tape archive'
@@ -109,6 +109,19 @@ class Gunz:
             \n{_7zip_download}'
           )
 
+  def create_tarball(tar_arg: str | list) -> str:
+    # Makes tarball out of a folder or a list of files
+    tar_arg: str = tar_arg.replace('\\', '/')
+
+    if os.path.exists(tar_arg):
+      ...
+    elif isinstance(tar_arg, list):
+      ...
+    else:
+      print(
+        f'ERROR: Given argument: "{tar_arg}" is not a list of files or a directory path.'
+      )
+      return Gunz._Var.exit_code  # Dont sys.exit 
           
 
 # Entry point / Anti-import statement
