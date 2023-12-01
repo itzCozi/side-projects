@@ -2,8 +2,8 @@
 # 7-Zip Path: C:\Program Files\7-Zip
 # 7z cmd examples: https://7ziphelp.com/7zip-command-line | https://www.dotnetperls.com/7-zip-examples
 # Types of compression: 7z, zip, gzip, gztar (tb or tarball)
-# EX: ./Gunz -7z test/source   (only arg without '-' is the path)
-# EX: ./Gunz -gz test.txt      (compresses test.txt with gunzip)
+# EX: ./gunz -7z test/source   (only arg without '-' is the path)
+# EX: ./gunz -gz test.txt      (compresses test.txt with gunzip)
 
 import os, sys
 import platform
@@ -82,25 +82,32 @@ class Gunz:
 
   @staticmethod
   def prechecks() -> None:
+    # Check 1
     if 'win' in Gunz._Vars.platform:
       if not os.path.exists(Gunz._Vars.win_zip7_path):
         install_promt = input(
           f'ERROR: Cannot find 7zip on system, want to install it? (Y/n): '
         ).lower()
+        _7zip_download: str = 'https://www.7-zip.org/download.html'
         if install_promt == 'y' or install_promt == 'yes':
           Helper._download('https://www.7-zip.org/a/7z2301-x64.msi', Helper.get_current_dir())
           if os.path.exists(f'{Helper.get_current_dir}/7z2301-x64.msi'):
             os.system('powershell ./7z2301-x64.msi')  # Attempt to run installer
             print(f'Attempted installer run AT: {Helper.get_time()}')
             print(
-              '----------------------------------------------------------------- \
+              f'----------------------------------------------------------------- \
               \nIf this worked please run through the installer, if not please \
               \nrun download the installer manually at the following: \
-              \nhttps://www.7-zip.org/download.html \
+              \n{_7zip_download} \
               \n-----------------------------------------------------------------'
             )
           else:
-            print('Automated install failed install manually at: https://www.7-zip.org/download.html')
+            print(f'Automated install failed install manually at: {_7zip_download}')
+        else:
+          print(
+            f'Skipping 7zip install, you will need to download it at: \
+            \n{_7zip_download}'
+          )
 
           
 
