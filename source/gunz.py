@@ -1,31 +1,30 @@
+# DESCRIPTION
 # File/Folder compression script -> .exe
 # Comprsses files to .gz and folders to .tar.gz
-# 7z cmd examples: https://7ziphelp.com/7zip-command-line | https://www.dotnetperls.com/7-zip-examples
-# tar in windows: https://stackoverflow.com/questions/37595511/how-to-create-tar-file-on-windows-os
-# Types of compression: gz, gztar (tb or tarball)
+# Types of compression: gz, gzt (tb or tarball), zip
 # EX: ./gunz test/source
 # EX: ./gunz test.txt
+
+# LINKS / REFERENCES
+# 7z cmd examples: https://7ziphelp.com/7zip-command-line | https://www.dotnetperls.com/7-zip-examples
+# tar in windows: https://stackoverflow.com/questions/37595511/how-to-create-tar-file-on-windows-os
+
 
 import time
 import os, sys
 import platform
-import requests
 import tarfile
-import subprocess
+import gzip
+
 
 # TODO
 '''
+* Add .zip formatter and a password
 * Convert os.system and os.popen to subprocess calls
 '''
 
 
 class Helper:
-
-  @staticmethod
-  def download(url: str, newpath: str) -> None:
-    file_content: requests.models.Response = requests.get(url)
-    open(newpath, 'wb').write(file_content.content)
-    print(f'Downloaded file to: "{newpath}"')
 
   @staticmethod
   def get_current_dir() -> str:
@@ -44,77 +43,137 @@ class Gunz:
   class _Vars:
     exit_code: None = None
     platform = sys.platform
-    win_zip7_path: str = 'C:/Program Files/7-Zip'
 
   @staticmethod
   def arg_handler() -> None:
     try:
       if __file__.endswith('.py'):
         arg1 = sys.argv[1]          # File name
-        arg2 = sys.argv[2].lower()  # Switch arg
+        arg2 = sys.argv[2].lower()  # Switch arg (-): -extract
       if __file__.endswith('.exe'):
         arg1 = sys.argv[0]          # File name
-        arg2 = sys.argv[2].lower()  # Switch arg
+        arg2 = sys.argv[2].lower()  # Switch arg (-): -help
     except Exception:
       pass
 
-    if os.path.isfile(arg1):
-      Gunz.zip_file(arg2)
+    # -h   |  outputs help string (needs to be made)
+    # -p   |  for a password protected archive
+    # -lvl |  what level to compress the item to
 
+    if os.path.isfile(arg1):
+      if tarfile.is_tarfile(arg1):
+        Gunz.unzip_tarball(arg1)       # Decompress tarballs with unzip_tarball
+      elif arg1.endswith('.gz'):
+        Gunz.unzip_file(arg1)          # Unzip gz files with unzip_file
+      else:
+        Gunz.zip_file(arg1)            # Zip unzipped files with zip_file
+
+    elif os.path.isdir(arg1):
+      Gunz.zip_directory(arg1)         # Zip unzipped directorys with zip_directory
 
   @staticmethod
-  def prechecks() -> None:
-    # Check 1
-    if 'win' in Gunz._Vars.platform:
-      if not os.path.exists(Gunz._Vars.win_zip7_path):
-        install_promt = input(
-          f'ERROR: Cannot find 7zip on system, want to install it? (Y/n): '
-        ).lower()
-        _7zip_download: str = 'https://www.7-zip.org/download.html'
-        if install_promt == 'y' or install_promt == 'yes':
-          Helper.download('https://www.7-zip.org/a/7z2301-x64.msi', f'{Helper.get_current_dir()}/7zip.msi')
-          if os.path.exists(f'{Helper.get_current_dir()}/7zip.msi'):
-            os.system('powershell ./7zip.msi')  # Attempt to run installer
-            print(f'Attempted installer run AT: {Helper.get_time()}')
-            print(
-              f'----------------------------------------------------------------- \
-              \nIf this worked please run through the installer, if not please \
-              \nrun download the installer manually at the following: \
-              \n{_7zip_download} \
-              \n-----------------------------------------------------------------'
-            )
-          else:
-            print(f'Automated install failed install manually at: {_7zip_download}')
-        else:
-          print(
-            f'Skipping 7zip install, you will need to download it at: \
-            \n{_7zip_download}'
-          )
+  def zip_directory(dir_path: str) -> str:
+    """
+    Zips a directory to a .tgz file EX: test -> test.tgz
+
+    Args:
+      dir_path (str): Path of the input directory
+
+    Returns:
+      str: The path of the output archive
+    """
+    if not os.path.exists(dir_path):
+      print(f'ERROR: Given directory: "{dir_path}" does not exist.')
+      return Gunz._Vars.exit_code
+
+    dir_path: str = dir_path.replace('\\', '/')
+    cur_directory: str = Helper.get_current_dir()
+    archive_name: str = f'{cur_directory}/{dir_path.split("/")[-1]}.tgz'
+
+    with tarfile.open(archive_name, 'w:gz') as archive:
+      archive.add(f'{dir_path}/')
+
+  @staticmethod
+  def unzip_tarball(archive_path: str) -> str:
+    """
+    Unzips a directory to a its original state EX: test.tgz -> test
+
+    Args:
+      archive_path (str): Path of the input archive
+
+    Returns:
+      str: The path of the output directory
+    """
+    if not os.path.exists(archive_path):
+      print(f'ERROR: Given archive: "{archive_path}" does not exist.')
+      return Gunz._Vars.exit_code
+
+    archive_path: str = archive_path.replace('\\', '/')
+    cur_directory: str = Helper.get_current_dir()
+    archive_name: str = f'{cur_directory}/{archive_path.split("/")[-1][:archive_path.split("/")[-1].find(".tgz")]}'
+    with tarfile.open(archive_path, 'r:gz') as tarball:
+      tarball.extractall()
 
   @staticmethod
   def zip_file(file_path: str) -> str:
-    # Scrap all of this and use this: https://stackoverflow.com/questions/8156707/gzip-a-file-in-python
+    """
+    Zips a file to a .gz file EX: test.txt -> test.txt.gz
+
+    Args:
+      file_path (str): Path of the input file
+
+    Returns:
+      str: The path of the output file
+    """
     if not os.path.exists(file_path):
       print(f'ERROR: Given file: "{file_path}" does not exist.')
       return Gunz._Vars.exit_code
-    file_path: str = file_path.replace('\\', '/')
-    archive_name: str = f'{file_path.split("/")[-1][:file_path.split("/")[-1].find(".")]}.7z'
-    prev_size: float = round(os.path.getsize(file_path), 2)
 
-    if 'win' in Gunz._Vars.platform:
-      command = [
-        'powershell',
-        '-Command',
-        f'cd "{Gunz._Vars.win_zip7_path}" ; ./7z a "{archive_name}" "{file_path}"'
-      ]
-      subprocess.run(command, shell=True)
-      new_size: float = round(os.path.getsize(archive_name), 2)
-      size_reduction: float = round(prev_size / new_size, 2)
-      print(f'Successfully zipped file: "{file_path}" to {size_reduction}% of its previous size')
+    file_path: str = file_path.replace('\\', '/')
+    cur_directory: str = Helper.get_current_dir()
+    archive_name: str = f'{cur_directory}/{file_path.split("/")[-1]}.gz'
+    prev_size: float = os.path.getsize(file_path)
+
+    with open(file_path, 'rb') as fin, gzip.open(archive_name, 'wb') as fout:
+      fout.writelines(fin)
+
+    new_size: float = os.path.getsize(archive_name)
+    size_reduction: float = round(prev_size / new_size, 2)
+    print(f'Successfully compressed file: "{file_path}" to {size_reduction}% of its previous size.')
+    return archive_name
+
+  @staticmethod
+  def unzip_file(file_path: str) -> str:
+    """
+    Unzips a file to its original state EX: test.txt.gz -> test.txt
+
+    Args:
+      file_path (str): Path of the input '.gz' file
+
+    Returns:
+      str: The path of the output archive
+    """
+    if not os.path.exists(file_path):
+      print(f'ERROR: Given file: "{file_path}" does not exist.')
+      return Gunz._Vars.exit_code
+
+    file_path: str = file_path.replace('\\', '/')
+    cur_directory: str = Helper.get_current_dir()
+    prev_size: float = os.path.getsize(file_path)
+    file_name: str = f'{cur_directory}/{file_path.split("/")[-1][:file_path.split("/")[-1].find(".gz")]}'
+
+    with gzip.open(file_path, 'rb') as fin, open(file_name, 'wb') as fout:
+      fout.writelines(fin)
+
+    new_size: float = os.path.getsize(file_path.replace('.gz', ''))
+    size_increase: float = round(prev_size / new_size, 2)
+    print(f'Successfully uncompressed archive: "{file_path}" to {size_increase}x its previous size.')
+    return file_path
+
 
 # Entry point / Anti-import statement
 if __name__ == '__main__':
-  Gunz.zip_file(f'{os.getcwd()}/c.py')#Gunz.arg_handler()
+  Gunz.arg_handler()
 else:
   print(f'ERROR: You cannot import "{__file__}".')
   sys.exit(1)
