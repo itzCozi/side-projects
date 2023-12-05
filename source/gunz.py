@@ -19,7 +19,7 @@ import gzip
 
 # TODO
 '''
-* Add .zip formatter and a password
+* Add .zip formatter and a password: https://pypi.org/project/pyminizip/
 * Convert os.system and os.popen to subprocess calls
 '''
 
