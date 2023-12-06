@@ -19,8 +19,8 @@ import gzip
 
 # TODO
 '''
-* Add .zip formatter and a password: https://pypi.org/project/pyminizip/
-* Convert os.system and os.popen to subprocess calls
+* Add password protected zip with the '-p' arg
+* Make it so it will extract to a path if given by user args
 '''
 
 
@@ -57,8 +57,11 @@ class Gunz:
       pass
 
     # -h   |  outputs help string (needs to be made)
+    # -z   |  use .zip format instead of gz or tar
     # -p   |  for a password protected archive
     # -lvl |  what level to compress the item to
+    # TODO: Check if arg2 is a file name too if so make
+    # the output archive name arg2
 
     if os.path.isfile(arg1):
       if tarfile.is_tarfile(arg1):
@@ -72,7 +75,7 @@ class Gunz:
       Gunz.zip_directory(arg1)         # Zip unzipped directorys with zip_directory
 
   @staticmethod
-  def zip_directory(dir_path: str) -> str:
+  def zip_directory(dir_path: str, archive_name: str = '') -> str:
     """
     Zips a directory to a .tgz file EX: test -> test.tgz
 
@@ -88,13 +91,15 @@ class Gunz:
 
     dir_path: str = dir_path.replace('\\', '/')
     cur_directory: str = Helper.get_current_dir()
-    archive_name: str = f'{cur_directory}/{dir_path.split("/")[-1]}.tgz'
+    if archive_name == '':
+      archive_name: str = f'{cur_directory}/{dir_path.split("/")[-1]}.tgz'
 
     with tarfile.open(archive_name, 'w:gz') as archive:
       archive.add(f'{dir_path}/')
 
   @staticmethod
   def unzip_tarball(archive_path: str) -> str:
+    # TODO: Make it so it will extract to a path if given by user args
     """
     Unzips a directory to a its original state EX: test.tgz -> test
 
@@ -109,13 +114,11 @@ class Gunz:
       return Gunz._Vars.exit_code
 
     archive_path: str = archive_path.replace('\\', '/')
-    cur_directory: str = Helper.get_current_dir()
-    archive_name: str = f'{cur_directory}/{archive_path.split("/")[-1][:archive_path.split("/")[-1].find(".tgz")]}'
     with tarfile.open(archive_path, 'r:gz') as tarball:
       tarball.extractall()
 
   @staticmethod
-  def zip_file(file_path: str) -> str:
+  def zip_file(file_path: str, archive_name: str = '') -> str:
     """
     Zips a file to a .gz file EX: test.txt -> test.txt.gz
 
@@ -131,8 +134,9 @@ class Gunz:
 
     file_path: str = file_path.replace('\\', '/')
     cur_directory: str = Helper.get_current_dir()
-    archive_name: str = f'{cur_directory}/{file_path.split("/")[-1]}.gz'
     prev_size: float = os.path.getsize(file_path)
+    if archive_name == '':
+      archive_name: str = f'{cur_directory}/{file_path.split("/")[-1]}.gz'
 
     with open(file_path, 'rb') as fin, gzip.open(archive_name, 'wb') as fout:
       fout.writelines(fin)
@@ -144,6 +148,7 @@ class Gunz:
 
   @staticmethod
   def unzip_file(file_path: str) -> str:
+    # TODO: Make it so it will extract to a path if given by user args
     """
     Unzips a file to its original state EX: test.txt.gz -> test.txt
 
@@ -160,9 +165,10 @@ class Gunz:
     file_path: str = file_path.replace('\\', '/')
     cur_directory: str = Helper.get_current_dir()
     prev_size: float = os.path.getsize(file_path)
-    file_name: str = f'{cur_directory}/{file_path.split("/")[-1][:file_path.split("/")[-1].find(".gz")]}'
+    file_archive_name: str = file_path.split("/")[-1]
+    out_file_name: str = f'{cur_directory}/{file_archive_name[:file_archive_name.find(".gz")]}'
 
-    with gzip.open(file_path, 'rb') as fin, open(file_name, 'wb') as fout:
+    with gzip.open(file_path, 'rb') as fin, open(out_file_name, 'wb') as fout:
       fout.writelines(fin)
 
     new_size: float = os.path.getsize(file_path.replace('.gz', ''))
